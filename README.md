@@ -18,10 +18,13 @@ Python framework for experimenting with a weekly single-courier delivery routing
 - Coordinates are Cartesian kilometers.
 - All times are integer minutes from `00:00`; `24:00` is `1440`.
 - Travel time is computed as `ceil(60 * distance_km / 50)`.
-- Service starts must lie inside a valid customer time window for that day.
+- Service must start and finish inside a valid customer time window for that day.
 - Waiting is allowed when the courier arrives before a time window opens.
+- Depot departure is flexible, so waiting before the first customer is handled as a later departure instead of waiting outside from `00:00`.
 - Default service time is 5 minutes if the input does not provide one.
 - A route is hard feasible only if it returns to the depot by `1440` and has no duplicated weekly deliveries.
+
+The canonical defaults are in `src/vrp_weekly/config.py`. A report-friendly copy is in `params/default_params.txt`.
 
 ## Project Layout
 
@@ -50,13 +53,14 @@ Benchmark comparison is sorted by:
 2. `total_deferral_days` ascending.
 3. `total_distance_km` ascending.
 
-The reported objective is:
+Deferral is measured as `delivered_day - earliest_available_day`, so customers that cannot receive delivery on Monday are not unfairly penalized. The reported objective is:
 
 ```text
 1_000_000 * incomplete_count
 + 10_000 * total_deferral_days
 + 10 * total_distance_km
 + total_waiting_time_min
++ 100 * active_days
 ```
 
 This objective strongly prioritizes finishing orders, then serving earlier in the week, then reducing distance and waiting.
@@ -140,4 +144,3 @@ Outputs:
 ```bash
 python -m pytest
 ```
-

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 
-from vrp_weekly.config import MONDAY, SUNDAY
+from vrp_weekly.config import CP_TIME_LIMIT_PER_DAY_SEC, DEFAULT_SERVICE_TIME_MIN, DROP_PENALTY_BY_DAY, MONDAY, SUNDAY
 from vrp_weekly.evaluator import evaluate_daily_route
 from vrp_weekly.models import DailyRoute, Instance, WeeklySchedule
 from vrp_weekly.solvers.base import Solver
@@ -20,15 +20,13 @@ class CpDailySolver(Solver):
 
     def __init__(
         self,
-        time_limit_per_day: int = 10,
-        drop_penalty_base: int = 10_000,
-        drop_penalty_growth: float = 2.0,
+        time_limit_per_day: int = CP_TIME_LIMIT_PER_DAY_SEC,
+        drop_penalty_by_day: dict[int, int] | None = None,
         seed: int | None = None,
     ) -> None:
         """Initialize CP solver parameters."""
         self.time_limit_per_day = time_limit_per_day
-        self.drop_penalty_base = drop_penalty_base
-        self.drop_penalty_growth = drop_penalty_growth
+        self.drop_penalty_by_day = dict(DROP_PENALTY_BY_DAY if drop_penalty_by_day is None else drop_penalty_by_day)
         self.seed = seed
 
     def solve(self, instance: Instance) -> WeeklySchedule:
@@ -67,7 +65,7 @@ class CpDailySolver(Solver):
                 to_node = manager.IndexToNode(to_index)
                 from_location = instance.locations[node_ids[from_node]]
                 to_location = instance.locations[node_ids[to_node]]
-                service_time = 0 if from_node == 0 else max(from_location.service_time, 5)
+                service_time = 0 if from_node == 0 else max(from_location.service_time, DEFAULT_SERVICE_TIME_MIN)
                 return travel_time_between_minutes(from_location, to_location) + service_time
 
             transit_callback_index = routing.RegisterTransitCallback(transit_callback)
@@ -80,15 +78,18 @@ class CpDailySolver(Solver):
                 cumul = time_dimension.CumulVar(index)
                 cumul.SetRange(0, MINUTES_PER_DAY)
                 windows = instance.windows_for_customer_day(customer_id, day)
-                valid_intervals = [(window.start_minute, window.end_minute) for window in windows]
+                service_time = max(instance.locations[customer_id].service_time, DEFAULT_SERVICE_TIME_MIN)
+                valid_intervals = [(window.start_minute, max(window.start_minute, window.end_minute - service_time)) for window in windows]
                 cursor = 0
                 for start, end in sorted(valid_intervals):
+                    if end < start:
+                        continue
                     if cursor < start:
                         cumul.RemoveInterval(cursor, start - 1)
                     cursor = max(cursor, end + 1)
                 if cursor <= MINUTES_PER_DAY:
                     cumul.RemoveInterval(cursor, MINUTES_PER_DAY)
-                day_penalty = int(self.drop_penalty_base * (self.drop_penalty_growth ** (day - 1)))
+                day_penalty = self.drop_penalty_by_day.get(day, DROP_PENALTY_BY_DAY[SUNDAY])
                 routing.AddDisjunction([index], day_penalty)
 
             search_parameters = pywrapcp.DefaultRoutingSearchParameters()

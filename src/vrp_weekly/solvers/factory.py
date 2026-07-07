@@ -4,6 +4,14 @@ from __future__ import annotations
 
 from typing import Any
 
+from vrp_weekly.config import (
+    CP_TIME_LIMIT_PER_DAY_SEC,
+    DROP_PENALTY_BY_DAY,
+    INSERTION_WEIGHT,
+    REGRET_WEIGHT,
+    URGENCY_WEIGHT,
+    WAITING_WEIGHT,
+)
 from vrp_weekly.solvers.base import Solver
 from vrp_weekly.solvers.cp_daily import CpDailySolver
 from vrp_weekly.solvers.earliest_deadline import EarliestDeadlineSolver
@@ -20,17 +28,16 @@ def create_solver(solver_key: str, **kwargs: Any) -> Solver:
         return EarliestDeadlineSolver()
     if normalized == "regret":
         return RegretInsertionSolver(
-            regret_weight=float(kwargs.get("regret_weight", 1.0)),
-            insertion_weight=float(kwargs.get("insertion_weight", 1.0)),
-            urgency_weight=float(kwargs.get("urgency_weight", 100.0)),
-            waiting_weight=float(kwargs.get("waiting_weight", 0.2)),
+            regret_weight=float(kwargs.get("regret_weight", REGRET_WEIGHT)),
+            insertion_weight=float(kwargs.get("insertion_weight", INSERTION_WEIGHT)),
+            urgency_weight=float(kwargs.get("urgency_weight", URGENCY_WEIGHT)),
+            waiting_weight=float(kwargs.get("waiting_weight", WAITING_WEIGHT)),
             seed=kwargs.get("seed"),
         )
     if normalized == "cp":
         return CpDailySolver(
-            time_limit_per_day=int(kwargs.get("cp_time_limit_per_day", 10)),
-            drop_penalty_base=int(kwargs.get("drop_penalty_base", 10_000)),
-            drop_penalty_growth=float(kwargs.get("drop_penalty_growth", 2.0)),
+            time_limit_per_day=int(kwargs.get("cp_time_limit_per_day", CP_TIME_LIMIT_PER_DAY_SEC)),
+            drop_penalty_by_day=kwargs.get("drop_penalty_by_day", DROP_PENALTY_BY_DAY),
             seed=kwargs.get("seed"),
         )
     raise ValueError(f"Unknown solver: {solver_key}")

@@ -9,6 +9,15 @@ import time
 from pathlib import Path
 from typing import Any
 
+from vrp_weekly.config import (
+    CP_TIME_LIMIT_PER_DAY_SEC,
+    INSERTION_WEIGHT,
+    METRIC_COLUMNS,
+    REGRET_WEIGHT,
+    SORT_BY,
+    URGENCY_WEIGHT,
+    WAITING_WEIGHT,
+)
 from vrp_weekly.evaluator import calculate_objective, evaluate_weekly_schedule
 from vrp_weekly.export import export_benchmark_plots, export_report_files, save_result_json
 from vrp_weekly.io import load_instance
@@ -97,13 +106,15 @@ def run_benchmark(
                     metrics.total_deferral_days,
                     metrics.total_distance_km,
                     metrics.total_waiting_time_min,
+                    active_days=metrics.number_of_active_days,
+                    total_route_duration_min=metrics.total_route_duration_min,
                 ),
             }
         )
         row.pop("violations", None)
-        rows.append(row)
+        rows.append({column: row[column] for column in METRIC_COLUMNS})
 
-    rows.sort(key=lambda row: (row["incomplete_count"], row["total_deferral_days"], row["total_distance_km"]))
+    rows.sort(key=lambda row: tuple(row[column] for column in SORT_BY))
     frame = BenchmarkTable(rows)
     summary_path = output_dir / "benchmark_summary.csv"
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -122,13 +133,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--results-dir", default="results", help="Directory for benchmark outputs.")
     parser.add_argument("--export-report", action="store_true", help="Export report CSV and PNG files.")
     parser.add_argument("--seed", type=int, default=0, help="Random seed.")
-    parser.add_argument("--urgency-weight", type=float, default=100.0, help="Regret solver urgency weight.")
-    parser.add_argument("--regret-weight", type=float, default=1.0, help="Regret solver regret weight.")
-    parser.add_argument("--insertion-weight", type=float, default=1.0, help="Regret solver insertion weight.")
-    parser.add_argument("--waiting-weight", type=float, default=0.2, help="Waiting penalty weight.")
-    parser.add_argument("--cp-time-limit-per-day", type=int, default=10, help="CP solver time limit per day.")
-    parser.add_argument("--drop-penalty-base", type=int, default=10_000, help="CP solver base drop penalty.")
-    parser.add_argument("--drop-penalty-growth", type=float, default=2.0, help="CP solver drop penalty growth.")
+    parser.add_argument("--urgency-weight", type=float, default=URGENCY_WEIGHT, help="Regret solver urgency weight.")
+    parser.add_argument("--regret-weight", type=float, default=REGRET_WEIGHT, help="Regret solver regret weight.")
+    parser.add_argument("--insertion-weight", type=float, default=INSERTION_WEIGHT, help="Regret solver insertion weight.")
+    parser.add_argument("--waiting-weight", type=float, default=WAITING_WEIGHT, help="Waiting penalty weight.")
+    parser.add_argument("--cp-time-limit-per-day", type=int, default=CP_TIME_LIMIT_PER_DAY_SEC, help="CP solver time limit per day.")
     parser.add_argument("--log-level", default="WARNING", help="Python logging level.")
     return parser
 
@@ -149,8 +158,6 @@ def main(argv: list[str] | None = None) -> int:
         urgency_weight=args.urgency_weight,
         waiting_weight=args.waiting_weight,
         cp_time_limit_per_day=args.cp_time_limit_per_day,
-        drop_penalty_base=args.drop_penalty_base,
-        drop_penalty_growth=args.drop_penalty_growth,
         seed=args.seed,
     )
     print(frame.to_string(index=False))

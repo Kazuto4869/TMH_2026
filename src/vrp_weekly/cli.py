@@ -7,6 +7,13 @@ import logging
 import sys
 from pathlib import Path
 
+from vrp_weekly.config import (
+    CP_TIME_LIMIT_PER_DAY_SEC,
+    INSERTION_WEIGHT,
+    REGRET_WEIGHT,
+    URGENCY_WEIGHT,
+    WAITING_WEIGHT,
+)
 from vrp_weekly.evaluator import evaluate_weekly_schedule, print_metrics, print_schedule
 from vrp_weekly.export import export_report_files, save_result_json
 from vrp_weekly.io import load_instance, summarize_instance
@@ -23,13 +30,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--save-results", action="store_true", help="Save result JSON and report CSV files under results/.")
     parser.add_argument("--results-dir", default="results", help="Directory for saved results.")
     parser.add_argument("--seed", type=int, default=0, help="Random seed for solvers that need one.")
-    parser.add_argument("--urgency-weight", type=float, default=100.0, help="Regret solver urgency weight.")
-    parser.add_argument("--regret-weight", type=float, default=1.0, help="Regret solver regret weight.")
-    parser.add_argument("--insertion-weight", type=float, default=1.0, help="Regret solver insertion weight.")
-    parser.add_argument("--waiting-weight", type=float, default=0.2, help="Regret solver waiting penalty weight.")
-    parser.add_argument("--cp-time-limit-per-day", type=int, default=10, help="CP solver time limit per day in seconds.")
-    parser.add_argument("--drop-penalty-base", type=int, default=10_000, help="CP solver base drop penalty.")
-    parser.add_argument("--drop-penalty-growth", type=float, default=2.0, help="CP solver day-by-day drop penalty growth.")
+    parser.add_argument("--urgency-weight", type=float, default=URGENCY_WEIGHT, help="Regret solver urgency weight.")
+    parser.add_argument("--regret-weight", type=float, default=REGRET_WEIGHT, help="Regret solver regret weight.")
+    parser.add_argument("--insertion-weight", type=float, default=INSERTION_WEIGHT, help="Regret solver insertion weight.")
+    parser.add_argument("--waiting-weight", type=float, default=WAITING_WEIGHT, help="Regret solver waiting penalty weight.")
+    parser.add_argument("--cp-time-limit-per-day", type=int, default=CP_TIME_LIMIT_PER_DAY_SEC, help="CP solver time limit per day in seconds.")
     parser.add_argument("--log-level", default="WARNING", help="Python logging level.")
     return parser
 
@@ -54,8 +59,6 @@ def main(argv: list[str] | None = None) -> int:
         urgency_weight=args.urgency_weight,
         waiting_weight=args.waiting_weight,
         cp_time_limit_per_day=args.cp_time_limit_per_day,
-        drop_penalty_base=args.drop_penalty_base,
-        drop_penalty_growth=args.drop_penalty_growth,
         seed=args.seed,
     )
     schedule = solver.solve(instance)

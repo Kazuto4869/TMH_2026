@@ -5,7 +5,16 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass
 
-from vrp_weekly.config import MONDAY, SUNDAY
+from vrp_weekly.config import (
+    ENABLE_LOCAL_SEARCH,
+    INSERTION_WEIGHT,
+    MAX_LOCAL_SEARCH_ITERATIONS,
+    MONDAY,
+    REGRET_WEIGHT,
+    SUNDAY,
+    URGENCY_WEIGHT,
+    WAITING_WEIGHT,
+)
 from vrp_weekly.evaluator import evaluate_daily_route
 from vrp_weekly.models import DailyRoute, Instance, WeeklySchedule
 from vrp_weekly.solvers.base import Solver
@@ -34,13 +43,14 @@ class RegretInsertionSolver(Solver):
 
     def __init__(
         self,
-        regret_weight: float = 1.0,
-        insertion_weight: float = 1.0,
-        urgency_weight: float = 100.0,
-        waiting_weight: float = 0.2,
+        regret_weight: float = REGRET_WEIGHT,
+        insertion_weight: float = INSERTION_WEIGHT,
+        urgency_weight: float = URGENCY_WEIGHT,
+        waiting_weight: float = WAITING_WEIGHT,
         seed: int | None = None,
         candidate_scan_limit: int = 80,
-        local_search_passes: int = 3,
+        enable_local_search: bool = ENABLE_LOCAL_SEARCH,
+        max_local_search_iterations: int = MAX_LOCAL_SEARCH_ITERATIONS,
     ) -> None:
         """Initialize heuristic weights."""
         self.regret_weight = regret_weight
@@ -49,7 +59,8 @@ class RegretInsertionSolver(Solver):
         self.waiting_weight = waiting_weight
         self.seed = seed
         self.candidate_scan_limit = candidate_scan_limit
-        self.local_search_passes = local_search_passes
+        self.enable_local_search = enable_local_search
+        self.max_local_search_iterations = max_local_search_iterations
 
     def solve(self, instance: Instance) -> WeeklySchedule:
         """Construct weekly routes with rolling-horizon regret insertion."""
@@ -78,13 +89,15 @@ class RegretInsertionSolver(Solver):
                 sequence.insert(chosen_candidate.position, chosen_customer)
                 undelivered.remove(chosen_customer)
 
-            improved_sequence = improve_daily_sequence(
-                instance,
-                day,
-                sequence,
-                waiting_weight=self.waiting_weight,
-                max_passes=self.local_search_passes,
-            )
+            improved_sequence = sequence
+            if self.enable_local_search:
+                improved_sequence = improve_daily_sequence(
+                    instance,
+                    day,
+                    sequence,
+                    waiting_weight=self.waiting_weight,
+                    max_iterations=self.max_local_search_iterations,
+                )
             routes[day] = evaluate_daily_route(instance, day, improved_sequence)
 
         return WeeklySchedule(routes=routes)
@@ -159,8 +172,9 @@ def improve_daily_sequence(
     instance: Instance,
     day: int,
     sequence: list[str],
-    waiting_weight: float = 0.2,
+    waiting_weight: float = WAITING_WEIGHT,
     max_passes: int | None = None,
+    max_iterations: int | None = MAX_LOCAL_SEARCH_ITERATIONS,
 ) -> list[str]:
     """Apply first-improvement relocate, swap, and 2-opt moves within a daily route."""
     best_sequence = list(sequence)
@@ -171,12 +185,16 @@ def improve_daily_sequence(
 
     improved = True
     passes = 0
+    iterations = 0
     while improved:
         if max_passes is not None and passes >= max_passes:
             break
         passes += 1
         improved = False
         for candidate_sequence in _neighbor_sequences(best_sequence):
+            if max_iterations is not None and iterations >= max_iterations:
+                return best_sequence
+            iterations += 1
             route = evaluate_daily_route(instance, day, candidate_sequence)
             if not route.hard_feasible:
                 continue
@@ -208,7 +226,7 @@ def customer_urgency(instance: Instance, day: int, customer_id: str) -> float:
     if not remaining_days:
         return 0.0
     if len(remaining_days) == 1:
-        return 2.0
+        return 10.0
     return 1.0 / len(remaining_days)
 
 

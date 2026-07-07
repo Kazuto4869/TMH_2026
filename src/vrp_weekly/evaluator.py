@@ -4,12 +4,25 @@ from __future__ import annotations
 
 from collections import Counter
 
-from vrp_weekly.config import DAYS_IN_WEEK, MONDAY, SUNDAY
+from vrp_weekly.config import (
+    ALLOW_WAITING,
+    DAY_END_MIN,
+    DEFAULT_SERVICE_TIME_MIN,
+    FLEXIBLE_DEPOT_DEPARTURE,
+    MONDAY,
+    REQUIRE_RETURN_BEFORE_DAY_END,
+    REQUIRE_SERVICE_END_WITHIN_WINDOW,
+    SUNDAY,
+    WEIGHT_ACTIVE_DAY,
+    WEIGHT_DEFERRAL,
+    WEIGHT_DISTANCE_KM,
+    WEIGHT_INCOMPLETE,
+    WEIGHT_ROUTE_DURATION_MIN,
+    WEIGHT_WAITING_MIN,
+)
 from vrp_weekly.distance import euclidean_distance_km, travel_time_between_minutes
 from vrp_weekly.models import DailyRoute, EvaluationMetrics, Instance, Stop, TimeWindow, WeeklySchedule
-from vrp_weekly.time_utils import MINUTES_PER_DAY, format_hhmm
-
-DEFAULT_SERVICE_TIME_MIN = 5
+from vrp_weekly.time_utils import format_hhmm
 
 
 def evaluate_daily_route(instance: Instance, day: int, customer_sequence: list[str]) -> DailyRoute:
@@ -18,7 +31,8 @@ def evaluate_daily_route(instance: Instance, day: int, customer_sequence: list[s
         raise ValueError(f"day must be in 1..7, got {day}")
 
     previous_location = instance.depot()
-    current_time = 0
+    depot_departure_time = _choose_depot_departure_time(instance, day, customer_sequence)
+    current_time = depot_departure_time
     stops: list[Stop] = []
     violations: list[str] = []
     route_distance_km = 0.0
@@ -47,7 +61,7 @@ def evaluate_daily_route(instance: Instance, day: int, customer_sequence: list[s
         travel_time_min = travel_time_between_minutes(previous_location, location)
         arrival_time = current_time + travel_time_min
         service_time = location.service_time if location.service_time > 0 else DEFAULT_SERVICE_TIME_MIN
-        selected_window = choose_earliest_feasible_window(instance, customer_id, day, arrival_time)
+        selected_window = choose_earliest_feasible_window(instance, customer_id, day, arrival_time, service_time)
 
         if selected_window is None:
             service_start_time = arrival_time
@@ -88,20 +102,21 @@ def evaluate_daily_route(instance: Instance, day: int, customer_sequence: list[s
     route_distance_km += return_distance_km
     route_travel_time_min += return_travel_time_min
     return_to_depot_time = current_time + return_travel_time_min
-    if return_to_depot_time > MINUTES_PER_DAY:
+    if REQUIRE_RETURN_BEFORE_DAY_END and return_to_depot_time > DAY_END_MIN:
         violations.append(f"Route on day {day} returns after 24:00 at {return_to_depot_time} minutes")
 
+    route_duration_min = return_to_depot_time - depot_departure_time if stops else 0
     hard_feasible = not violations and all(stop.hard_feasible for stop in stops)
     return DailyRoute(
         day=day,
         stops=stops,
-        depot_departure_time=0,
+        depot_departure_time=depot_departure_time,
         return_to_depot_time=return_to_depot_time,
         route_distance_km=route_distance_km,
         route_travel_time_min=route_travel_time_min,
         route_waiting_time_min=route_waiting_time_min,
         route_service_time_min=route_service_time_min,
-        route_duration_min=return_to_depot_time,
+        route_duration_min=route_duration_min,
         hard_feasible=hard_feasible,
         violations=violations,
     )
@@ -112,13 +127,38 @@ def choose_earliest_feasible_window(
     customer_id: str,
     day: int,
     arrival_time: int,
+    service_time: int | None = None,
 ) -> TimeWindow | None:
     """Return the earliest same-day time window that can accept an arrival."""
+    service_duration = DEFAULT_SERVICE_TIME_MIN if service_time is None else service_time
     for window in instance.windows_for_customer_day(customer_id, day):
         service_start = max(arrival_time, window.start_minute)
-        if service_start <= window.end_minute:
+        if not ALLOW_WAITING and arrival_time < window.start_minute:
+            continue
+        if REQUIRE_SERVICE_END_WITHIN_WINDOW:
+            if service_start + service_duration <= window.end_minute:
+                return window
+        elif service_start <= window.end_minute:
             return window
     return None
+
+
+def _choose_depot_departure_time(instance: Instance, day: int, customer_sequence: list[str]) -> int:
+    """Return a practical departure time that avoids waiting at depot before the first stop."""
+    if not FLEXIBLE_DEPOT_DEPARTURE or not customer_sequence:
+        return 0
+
+    first_customer_id = customer_sequence[0]
+    first_location = instance.locations.get(first_customer_id)
+    if first_location is None:
+        return 0
+
+    travel_time = travel_time_between_minutes(instance.depot(), first_location)
+    service_time = first_location.service_time if first_location.service_time > 0 else DEFAULT_SERVICE_TIME_MIN
+    selected_window = choose_earliest_feasible_window(instance, first_customer_id, day, travel_time, service_time)
+    if selected_window is None:
+        return 0
+    return max(0, selected_window.start_minute - travel_time)
 
 
 def evaluate_weekly_schedule(instance: Instance, schedule: WeeklySchedule) -> EvaluationMetrics:
@@ -150,12 +190,14 @@ def evaluate_weekly_schedule(instance: Instance, schedule: WeeklySchedule) -> Ev
                 delivered_by_day[stop.customer_id] = day
 
     incomplete_count = len(customer_ids - set(delivered_by_day))
-    total_deferral_days = sum(day - 1 for day in delivered_by_day.values())
+    total_deferral_days = sum(day - min(instance.available_days(customer_id)) for customer_id, day in delivered_by_day.items())
     objective_value = calculate_objective(
         incomplete_count=incomplete_count,
         total_deferral_days=total_deferral_days,
         total_distance_km=total_distance_km,
         total_waiting_time_min=total_waiting_time_min,
+        active_days=active_days,
+        total_route_duration_min=total_route_duration_min,
     )
 
     return EvaluationMetrics(
@@ -190,7 +232,7 @@ def validate_schedule(instance: Instance, schedule: WeeklySchedule) -> list[str]
             violations.append(f"Invalid route day: {day}")
         if route.day != day:
             violations.append(f"Route key {day} does not match route day {route.day}")
-        if route.return_to_depot_time > MINUTES_PER_DAY:
+        if REQUIRE_RETURN_BEFORE_DAY_END and route.return_to_depot_time > DAY_END_MIN:
             violations.append(f"Route on day {day} returns after 24:00")
         for route_violation in route.violations:
             violations.append(f"Day {day}: {route_violation}")
@@ -208,6 +250,8 @@ def validate_schedule(instance: Instance, schedule: WeeklySchedule) -> list[str]
                 violations.append(f"Day {day}: selected time window belongs to another customer for {stop.customer_id}")
             if stop.selected_time_window.day_of_week != day:
                 violations.append(f"Day {day}: selected time window has wrong day for {stop.customer_id}")
+            if REQUIRE_SERVICE_END_WITHIN_WINDOW and stop.service_end_time > stop.selected_time_window.end_minute:
+                violations.append(f"Day {day}: service end outside selected window for {stop.customer_id}")
             if not (stop.selected_time_window.start_minute <= stop.service_start_time <= stop.selected_time_window.end_minute):
                 violations.append(f"Day {day}: service start outside selected window for {stop.customer_id}")
 
@@ -223,13 +267,17 @@ def calculate_objective(
     total_deferral_days: int,
     total_distance_km: float,
     total_waiting_time_min: int,
+    active_days: int = 0,
+    total_route_duration_min: int = 0,
 ) -> float:
     """Compute the weighted benchmark objective value."""
     return (
-        1_000_000 * incomplete_count
-        + 10_000 * total_deferral_days
-        + 10 * total_distance_km
-        + total_waiting_time_min
+        WEIGHT_INCOMPLETE * incomplete_count
+        + WEIGHT_DEFERRAL * total_deferral_days
+        + WEIGHT_DISTANCE_KM * total_distance_km
+        + WEIGHT_WAITING_MIN * total_waiting_time_min
+        + WEIGHT_ACTIVE_DAY * active_days
+        + WEIGHT_ROUTE_DURATION_MIN * total_route_duration_min
     )
 
 
@@ -274,6 +322,6 @@ def print_metrics(metrics: EvaluationMetrics) -> None:
 
 def format_hhmm_safe(minutes: int) -> str:
     """Format minutes as HH:MM, allowing values beyond 24:00 for diagnostics."""
-    if 0 <= minutes <= MINUTES_PER_DAY:
+    if 0 <= minutes <= DAY_END_MIN:
         return format_hhmm(minutes)
     return f"{minutes}min"
