@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vrp-weekly"
+version = "0.1.0"
+description = "Experimental framework for weekly single-courier vehicle routing heuristics."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+benchmark = [
+    "pandas>=2.0",
+    "matplotlib>=3.8",
+]
+cp = [
+    "ortools>=9.10",
+]
+all = [
+    "pytest>=8.0",
+    "pandas>=2.0",
+    "matplotlib>=3.8",
+    "ortools>=9.10",
+]
+
+[project.scripts]
+vrp-weekly = "vrp_weekly.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-q"
