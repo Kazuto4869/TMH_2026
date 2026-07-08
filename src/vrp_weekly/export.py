@@ -82,14 +82,24 @@ def save_result_json(path: str | Path, solver_name: str, schedule: WeeklySchedul
     output_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 
-def save_run_log_csv(path: str | Path, row: dict[str, Any]) -> None:
-    """Save one model run summary as a CSV file."""
+def save_run_log_csv(path: str | Path, row: dict[str, Any] | list[dict[str, Any]]) -> None:
+    """Save one or more run summary rows as a CSV file."""
     output_path = Path(path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
+    rows = [row] if isinstance(row, dict) else list(row)
+    if not rows:
+        output_path.write_text("", encoding="utf-8")
+        return
+    fieldnames: list[str] = list(rows[0].keys())
+    for current_row in rows[1:]:
+        for key in current_row.keys():
+            if key not in fieldnames:
+                fieldnames.append(key)
     with output_path.open("w", newline="", encoding="utf-8") as file_obj:
-        writer = csv.DictWriter(file_obj, fieldnames=list(row))
+        writer = csv.DictWriter(file_obj, fieldnames=fieldnames)
         writer.writeheader()
-        writer.writerow(row)
+        for current_row in rows:
+            writer.writerow(current_row)
 
 
 def export_daily_schedule_csv(

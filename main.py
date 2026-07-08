@@ -105,22 +105,37 @@ def main() -> int:
         save_result_json(result_path, model.name, schedule, metrics)
         export_report_files(results_dir, model.name, instance, schedule, metrics)
         run_log_path = output_dir / f"run_log_{model.name}_{run_timestamp}.csv"
-        save_run_log_csv(
-            run_log_path,
-            _build_run_log_row(
-                model_name=model.name,
-                timestamp=run_timestamp,
-                runtime_sec=runtime_sec,
-                solver_status=solver_status,
-                metrics=metrics.to_dict(),
-                cp_time_limit_sec=cp_time_limit_sec if model.name == "cp_full_week" else "",
-                cp_time_limit_per_day_sec=cp_time_limit_per_day_sec if model.name == "cp_rolling" else "",
-                cp_max_customers=cp_max_customers if model.name == "cp_full_week" else "",
-                cp_max_candidates_per_day=cp_max_candidates_per_day if model.name == "cp_rolling" else "",
-                cp_threads=cp_threads if model.name in ("cp_full_week", "cp_rolling") else "",
-                cp_log_search=cp_log_search if model.name in ("cp_full_week", "cp_rolling") else "",
-            ),
-        )
+        if model.name == "cp_rolling":
+            save_run_log_csv(
+                run_log_path,
+                _build_rolling_run_log_rows(
+                    timestamp=run_timestamp,
+                    runtime_sec=runtime_sec,
+                    solver_status=solver_status,
+                    metrics=metrics.to_dict(),
+                    cp_time_limit_per_day_sec=cp_time_limit_per_day_sec,
+                    cp_max_candidates_per_day=cp_max_candidates_per_day,
+                    cp_threads=cp_threads,
+                    cp_log_search=cp_log_search,
+                ),
+            )
+        else:
+            save_run_log_csv(
+                run_log_path,
+                _build_run_log_row(
+                    model_name=model.name,
+                    timestamp=run_timestamp,
+                    runtime_sec=runtime_sec,
+                    solver_status=solver_status,
+                    metrics=metrics.to_dict(),
+                    cp_time_limit_sec=cp_time_limit_sec if model.name == "cp_full_week" else "",
+                    cp_time_limit_per_day_sec="",
+                    cp_max_customers=cp_max_customers if model.name == "cp_full_week" else "",
+                    cp_max_candidates_per_day="",
+                    cp_threads=cp_threads if model.name in ("cp_full_week", "cp_rolling") else "",
+                    cp_log_search=cp_log_search if model.name in ("cp_full_week", "cp_rolling") else "",
+                ),
+            )
         print(f"saved_results={model.name}", flush=True)
         print("updated_files=result.json,result.txt,daily_schedule.csv,incomplete_orders.csv", flush=True)
         print(f"run_log={run_log_path.name}", flush=True)
@@ -236,11 +251,15 @@ def _build_run_log_row(
     cp_max_candidates_per_day: int | str | None,
     cp_threads: int | str,
     cp_log_search: bool | str,
+    row_type: str = "SUMMARY",
+    day: int | str = "",
 ) -> dict[str, object]:
     """Build one CSV row describing a completed model run."""
     row: dict[str, object] = {
         "timestamp": timestamp,
         "model": model_name,
+        "row_type": row_type,
+        "day": day,
         "runtime_sec": f"{runtime_sec:.6f}",
         "solver_status": solver_status.get("status", ""),
         "gap_percent": format_gap_percent(solver_status.get("gap_percent", "")),
@@ -257,6 +276,74 @@ def _build_run_log_row(
         else:
             row[key] = value
     return row
+
+
+def _build_rolling_run_log_rows(
+    timestamp: str,
+    runtime_sec: float,
+    solver_status: dict[str, object],
+    metrics: dict[str, object],
+    cp_time_limit_per_day_sec: int | str,
+    cp_max_candidates_per_day: int | str | None,
+    cp_threads: int | str,
+    cp_log_search: bool | str,
+) -> list[dict[str, object]]:
+    """Build day-level rows plus a summary row for rolling-horizon CP."""
+    rows: list[dict[str, object]] = []
+    day_statuses = solver_status.get("day_statuses", {})
+    if isinstance(day_statuses, dict):
+        for day in range(1, 8):
+            day_status = day_statuses.get(day, {})
+            if not isinstance(day_status, dict):
+                day_status = {}
+            rows.append(
+                {
+                    "timestamp": timestamp,
+                    "model": "cp_rolling",
+                    "row_type": "DAY",
+                    "day": day,
+                    "runtime_sec": f"{float(day_status.get('runtime_sec', 0.0)):.6f}",
+                    "solver_status": day_status.get("status", ""),
+                    "gap_percent": format_gap_percent(day_status.get("gap_percent", "")),
+                    "objective": day_status.get("objective", ""),
+                    "best_bound": day_status.get("best_bound", ""),
+                    "cp_time_limit_sec": "",
+                    "cp_time_limit_per_day_sec": cp_time_limit_per_day_sec,
+                    "cp_max_customers": "",
+                    "cp_max_candidates_per_day": "" if cp_max_candidates_per_day is None else cp_max_candidates_per_day,
+                    "cp_threads": cp_threads,
+                    "cp_log_search": cp_log_search,
+                    "delivered_count": "",
+                    "incomplete_count": "",
+                    "active_days": "",
+                    "total_deferral_days": "",
+                    "total_distance_km": "",
+                    "total_travel_time_min": "",
+                    "total_waiting_time_min": "",
+                    "total_service_time_min": "",
+                    "total_route_duration_min": "",
+                    "objective_value": "",
+                    "violation_count": "",
+                }
+            )
+
+    summary_row = _build_run_log_row(
+        model_name="cp_rolling",
+        timestamp=timestamp,
+        runtime_sec=runtime_sec,
+        solver_status=solver_status,
+        metrics=metrics,
+        cp_time_limit_sec="",
+        cp_time_limit_per_day_sec=cp_time_limit_per_day_sec,
+        cp_max_customers="",
+        cp_max_candidates_per_day=cp_max_candidates_per_day,
+        cp_threads=cp_threads,
+        cp_log_search=cp_log_search,
+    )
+    summary_row["row_type"] = "SUMMARY"
+    summary_row["day"] = "SUMMARY"
+    rows.append(summary_row)
+    return rows
 
 
 if __name__ == "__main__":

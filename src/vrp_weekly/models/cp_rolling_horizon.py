@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import math
+import time
 
 from ortools.sat.python import cp_model
 
@@ -202,25 +203,32 @@ class RollingHorizonCPSATSolver:
 
         for day in range(MONDAY, SUNDAY + 1):
             LOGGER.info("cp_rolling day=%s start undelivered=%s", day, len(undelivered))
+            day_start = time.perf_counter()
             candidates = sorted(customer for customer in undelivered if _windows_for(instance, customer, day))
             candidates = self._limit_candidates(instance, day, candidates)
             if not candidates:
                 routes[day] = DailyRoute(day=day)
-                day_statuses[day] = {"status": "NO_CANDIDATES"}
+                day_statuses[day] = {
+                    "status": "NO_CANDIDATES",
+                    "runtime_sec": time.perf_counter() - day_start,
+                    "gap_percent": "",
+                }
                 LOGGER.info("cp_rolling day=%s no candidates", day)
                 continue
 
             LOGGER.info("cp_rolling day=%s solve candidates=%s", day, len(candidates))
             route, day_status = self._solve_day(instance, day, candidates)
+            day_status["runtime_sec"] = time.perf_counter() - day_start
             routes[day] = route
             day_statuses[day] = day_status
             undelivered -= route.delivered_customer_ids()
             LOGGER.info(
-                "cp_rolling day=%s done status=%s stops=%s remaining=%s",
+                "cp_rolling day=%s done status=%s stops=%s remaining=%s runtime=%.3fs",
                 day,
                 day_status.get("status", ""),
                 len(route.stops),
                 len(undelivered),
+                float(day_status["runtime_sec"]),
             )
 
         solved_statuses = [status for status in day_statuses.values() if status["status"] not in {"NO_CANDIDATES"}]
