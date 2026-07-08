@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import Any
 
 from vrp_weekly.config import (
-    CP_TIME_LIMIT_PER_DAY_SEC,
     INSERTION_WEIGHT,
     METRIC_COLUMNS,
     REGRET_WEIGHT,
@@ -93,7 +92,7 @@ def run_benchmark(
         metrics = evaluate_weekly_schedule(instance, schedule)
         save_result_json(solver_results_dir(output_dir, solver.name) / "result.json", solver.name, schedule, metrics)
         if export_report:
-            export_report_files(output_dir, solver.name, instance, schedule)
+            export_report_files(output_dir, solver.name, instance, schedule, metrics)
 
         row = metrics.to_dict()
         row.update(
@@ -136,7 +135,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--regret-weight", type=float, default=REGRET_WEIGHT, help="Regret solver regret weight.")
     parser.add_argument("--insertion-weight", type=float, default=INSERTION_WEIGHT, help="Regret solver insertion weight.")
     parser.add_argument("--waiting-weight", type=float, default=WAITING_WEIGHT, help="Waiting penalty weight.")
-    parser.add_argument("--cp-time-limit-per-day", type=int, default=CP_TIME_LIMIT_PER_DAY_SEC, help="CP solver time limit per day.")
+    parser.add_argument("--cp-time-limit-sec", type=int, default=60, help="Full-week CP-SAT time limit in seconds.")
+    parser.add_argument("--cp-time-limit-per-day-sec", type=int, default=10, help="Rolling CP-SAT time limit per day.")
+    parser.add_argument("--cp-time-limit-per-day", type=int, default=None, help="Deprecated alias for --cp-time-limit-per-day-sec.")
+    parser.add_argument("--cp-max-customers", type=int, default=None, help="Limit customers for full-week CP-SAT.")
+    parser.add_argument("--cp-max-candidates-per-day", type=int, default=None, help="Limit daily candidates for rolling CP-SAT.")
+    parser.add_argument("--cp-workers", type=int, default=8, help="CP-SAT worker count.")
+    parser.add_argument("--cp-log-search", action="store_true", help="Print CP-SAT search logs.")
     parser.add_argument("--log-level", default="WARNING", help="Python logging level.")
     return parser
 
@@ -147,6 +152,9 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     logging.basicConfig(level=getattr(logging, args.log_level.upper(), logging.WARNING), format="%(levelname)s:%(name)s:%(message)s")
     instance = load_instance(args.locations, args.time_windows)
+    cp_time_limit_per_day_sec = (
+        args.cp_time_limit_per_day if args.cp_time_limit_per_day is not None else args.cp_time_limit_per_day_sec
+    )
     frame = run_benchmark(
         instance,
         args.solvers,
@@ -156,7 +164,12 @@ def main(argv: list[str] | None = None) -> int:
         insertion_weight=args.insertion_weight,
         urgency_weight=args.urgency_weight,
         waiting_weight=args.waiting_weight,
-        cp_time_limit_per_day=args.cp_time_limit_per_day,
+        cp_time_limit_sec=args.cp_time_limit_sec,
+        cp_time_limit_per_day_sec=cp_time_limit_per_day_sec,
+        cp_max_customers=args.cp_max_customers,
+        cp_max_candidates_per_day=args.cp_max_candidates_per_day,
+        cp_workers=args.cp_workers,
+        cp_log_search=args.cp_log_search,
         seed=args.seed,
     )
     print(frame.to_string(index=False))

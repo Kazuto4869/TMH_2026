@@ -1,0 +1,316 @@
+model=nearest
+solver_status=HEURISTIC_FEASIBLE
+gap_percent=
+summary
+delivered_count=201
+incomplete_count=99
+total_distance_km=750.646865
+total_travel_time_min=996
+total_waiting_time_min=2320
+total_service_time_min=1495
+total_route_duration_min=4811
+number_of_active_days=7
+active_days=7
+total_deferral_days=612
+hard_feasible=True
+objective_value=105130526.468645
+
+daily_routes
+day=1
+route=C169 -> C189 -> C188 -> C270 -> C062 -> C234 -> C049 -> C014 -> C125 -> C108 -> C210 -> C202 -> C132 -> C209 -> C267 -> C197 -> C180 -> C142
+depot_departure=18:29
+return_to_depot=21:46
+route_duration_min=197
+route_distance_km=41.950632
+route_travel_time_min=59
+route_waiting_time_min=0
+route_service_time_min=138
+delivered_demand_kg=45.200000
+vehicle_capacity_kg=ignored
+hard_feasible=True
+stops
+- order=1; customer_id=C169; customer_name=Khach_Hang_169; demand_kg=0.900000; arrival=18:30; service_start=18:30; service_end=18:35; window=18:30-21:30; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.258754; hard_feasible=True
+- order=2; customer_id=C189; customer_name=Khach_Hang_189; demand_kg=2.000000; arrival=18:38; service_start=18:38; service_end=18:48; window=18:30-21:30; travel_from_previous_min=3; waiting_min=0; distance_from_previous_km=2.433033; hard_feasible=True
+- order=3; customer_id=C188; customer_name=Khach_Hang_188; demand_kg=3.100000; arrival=19:01; service_start=19:01; service_end=19:11; window=18:30-21:30; travel_from_previous_min=13; waiting_min=0; distance_from_previous_km=10.618625; hard_feasible=True
+- order=4; customer_id=C270; customer_name=Khach_Hang_270; demand_kg=1.700000; arrival=19:14; service_start=19:14; service_end=19:24; window=18:30-21:30; travel_from_previous_min=3; waiting_min=0; distance_from_previous_km=1.788370; hard_feasible=True
+- order=5; customer_id=C062; customer_name=Khach_Hang_062; demand_kg=1.100000; arrival=19:26; service_start=19:26; service_end=19:33; window=18:30-21:30; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=0.896435; hard_feasible=True
+- order=6; customer_id=C234; customer_name=Khach_Hang_234; demand_kg=1.400000; arrival=19:34; service_start=19:34; service_end=19:39; window=18:30-21:30; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.087778; hard_feasible=True
+- order=7; customer_id=C049; customer_name=Khach_Hang_049; demand_kg=4.600000; arrival=19:40; service_start=19:40; service_end=19:45; window=18:30-21:30; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.197811; hard_feasible=True
+- order=8; customer_id=C014; customer_name=Khach_Hang_014; demand_kg=1.700000; arrival=19:46; service_start=19:46; service_end=19:56; window=18:30-21:30; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.664234; hard_feasible=True
+- order=9; customer_id=C125; customer_name=Khach_Hang_125; demand_kg=1.300000; arrival=19:58; service_start=19:58; service_end=20:08; window=18:30-21:30; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.661560; hard_feasible=True
+- order=10; customer_id=C108; customer_name=Khach_Hang_108; demand_kg=1.600000; arrival=20:09; service_start=20:09; service_end=20:16; window=18:30-21:30; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.436720; hard_feasible=True
+- order=11; customer_id=C210; customer_name=Khach_Hang_210; demand_kg=3.100000; arrival=20:17; service_start=20:17; service_end=20:27; window=18:30-21:30; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.657777; hard_feasible=True
+- order=12; customer_id=C202; customer_name=Khach_Hang_202; demand_kg=2.100000; arrival=20:28; service_start=20:28; service_end=20:35; window=18:30-21:30; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.443005; hard_feasible=True
+- order=13; customer_id=C132; customer_name=Khach_Hang_132; demand_kg=4.200000; arrival=20:36; service_start=20:36; service_end=20:41; window=18:30-21:30; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.331592; hard_feasible=True
+- order=14; customer_id=C209; customer_name=Khach_Hang_209; demand_kg=4.300000; arrival=20:42; service_start=20:42; service_end=20:47; window=18:30-21:30; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.404937; hard_feasible=True
+- order=15; customer_id=C267; customer_name=Khach_Hang_267; demand_kg=3.700000; arrival=20:49; service_start=20:49; service_end=20:59; window=18:30-21:30; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.241291; hard_feasible=True
+- order=16; customer_id=C197; customer_name=Khach_Hang_197; demand_kg=3.400000; arrival=21:02; service_start=21:02; service_end=21:09; window=18:30-21:30; travel_from_previous_min=3; waiting_min=0; distance_from_previous_km=1.748259; hard_feasible=True
+- order=17; customer_id=C180; customer_name=Khach_Hang_180; demand_kg=2.500000; arrival=21:10; service_start=21:10; service_end=21:20; window=18:30-21:30; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.791720; hard_feasible=True
+- order=18; customer_id=C142; customer_name=Khach_Hang_142; demand_kg=2.500000; arrival=21:21; service_start=21:21; service_end=21:26; window=18:30-21:30; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.796201; hard_feasible=True
+
+day=2
+route=C140 -> C057 -> C009 -> C280 -> C051 -> C035 -> C181 -> C146 -> C170 -> C040 -> C211 -> C286 -> C011 -> C027 -> C087 -> C226 -> C293 -> C262 -> C114 -> C287 -> C026
+depot_departure=07:53
+return_to_depot=21:39
+route_duration_min=826
+route_distance_km=47.594288
+route_travel_time_min=68
+route_waiting_time_min=612
+route_service_time_min=146
+delivered_demand_kg=59.600000
+vehicle_capacity_kg=ignored
+hard_feasible=True
+stops
+- order=1; customer_id=C140; customer_name=Khach_Hang_140; demand_kg=1.400000; arrival=07:57; service_start=07:57; service_end=08:02; window=07:57-17:30; travel_from_previous_min=4; waiting_min=0; distance_from_previous_km=2.578610; hard_feasible=True
+- order=2; customer_id=C057; customer_name=Khach_Hang_057; demand_kg=0.700000; arrival=08:06; service_start=08:30; service_end=08:35; window=08:30-11:30; travel_from_previous_min=4; waiting_min=24; distance_from_previous_km=2.661686; hard_feasible=True
+- order=3; customer_id=C009; customer_name=Khach_Hang_009; demand_kg=0.800000; arrival=08:42; service_start=18:30; service_end=18:40; window=18:30-21:30; travel_from_previous_min=7; waiting_min=588; distance_from_previous_km=5.552739; hard_feasible=True
+- order=4; customer_id=C280; customer_name=Khach_Hang_280; demand_kg=4.600000; arrival=18:41; service_start=18:41; service_end=18:46; window=18:30-21:30; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.790520; hard_feasible=True
+- order=5; customer_id=C051; customer_name=Khach_Hang_051; demand_kg=5.000000; arrival=18:48; service_start=18:48; service_end=18:58; window=18:30-21:30; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.648185; hard_feasible=True
+- order=6; customer_id=C035; customer_name=Khach_Hang_035; demand_kg=1.400000; arrival=18:59; service_start=18:59; service_end=19:06; window=18:30-21:30; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.738338; hard_feasible=True
+- order=7; customer_id=C181; customer_name=Khach_Hang_181; demand_kg=3.200000; arrival=19:07; service_start=19:07; service_end=19:12; window=18:30-21:30; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.659005; hard_feasible=True
+- order=8; customer_id=C146; customer_name=Khach_Hang_146; demand_kg=1.400000; arrival=19:13; service_start=19:13; service_end=19:18; window=18:30-21:30; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.490454; hard_feasible=True
+- order=9; customer_id=C170; customer_name=Khach_Hang_170; demand_kg=1.600000; arrival=19:19; service_start=19:19; service_end=19:24; window=18:30-21:30; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.268525; hard_feasible=True
+- order=10; customer_id=C040; customer_name=Khach_Hang_040; demand_kg=2.700000; arrival=19:25; service_start=19:25; service_end=19:35; window=18:30-21:30; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.280379; hard_feasible=True
+- order=11; customer_id=C211; customer_name=Khach_Hang_211; demand_kg=2.300000; arrival=19:36; service_start=19:36; service_end=19:41; window=18:30-21:30; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.737783; hard_feasible=True
+- order=12; customer_id=C286; customer_name=Khach_Hang_286; demand_kg=0.800000; arrival=19:43; service_start=19:43; service_end=19:53; window=18:30-21:30; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=0.874803; hard_feasible=True
+- order=13; customer_id=C011; customer_name=Khach_Hang_011; demand_kg=4.300000; arrival=19:55; service_start=19:55; service_end=20:00; window=18:30-21:30; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=0.857861; hard_feasible=True
+- order=14; customer_id=C027; customer_name=Khach_Hang_027; demand_kg=4.600000; arrival=20:03; service_start=20:03; service_end=20:13; window=18:30-21:30; travel_from_previous_min=3; waiting_min=0; distance_from_previous_km=2.160294; hard_feasible=True
+- order=15; customer_id=C087; customer_name=Khach_Hang_087; demand_kg=3.800000; arrival=20:15; service_start=20:15; service_end=20:20; window=18:30-21:30; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.141710; hard_feasible=True
+- order=16; customer_id=C226; customer_name=Khach_Hang_226; demand_kg=1.500000; arrival=20:23; service_start=20:23; service_end=20:28; window=18:30-21:30; travel_from_previous_min=3; waiting_min=0; distance_from_previous_km=1.670726; hard_feasible=True
+- order=17; customer_id=C293; customer_name=Khach_Hang_293; demand_kg=4.800000; arrival=20:31; service_start=20:31; service_end=20:41; window=18:30-21:30; travel_from_previous_min=3; waiting_min=0; distance_from_previous_km=1.873462; hard_feasible=True
+- order=18; customer_id=C262; customer_name=Khach_Hang_262; demand_kg=3.400000; arrival=20:45; service_start=20:45; service_end=20:50; window=18:30-21:30; travel_from_previous_min=4; waiting_min=0; distance_from_previous_km=2.703743; hard_feasible=True
+- order=19; customer_id=C114; customer_name=Khach_Hang_114; demand_kg=3.000000; arrival=20:57; service_start=20:57; service_end=21:07; window=18:30-21:30; travel_from_previous_min=7; waiting_min=0; distance_from_previous_km=5.489958; hard_feasible=True
+- order=20; customer_id=C287; customer_name=Khach_Hang_287; demand_kg=3.900000; arrival=21:08; service_start=21:08; service_end=21:15; window=18:30-21:30; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.461805; hard_feasible=True
+- order=21; customer_id=C026; customer_name=Khach_Hang_026; demand_kg=4.400000; arrival=21:16; service_start=21:16; service_end=21:23; window=18:30-21:30; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.683235; hard_feasible=True
+
+day=3
+route=C288 -> C184 -> C121 -> C133 -> C250 -> C031 -> C257 -> C043 -> C023 -> C045 -> C237 -> C290 -> C116 -> C193 -> C012 -> C200 -> C036
+depot_departure=07:05
+return_to_depot=21:23
+route_duration_min=858
+route_distance_km=62.117786
+route_travel_time_min=82
+route_waiting_time_min=651
+route_service_time_min=125
+delivered_demand_kg=40.100000
+vehicle_capacity_kg=ignored
+hard_feasible=True
+stops
+- order=1; customer_id=C288; customer_name=Khach_Hang_288; demand_kg=3.300000; arrival=07:13; service_start=07:13; service_end=07:23; window=07:13-13:58; travel_from_previous_min=8; waiting_min=0; distance_from_previous_km=6.313857; hard_feasible=True
+- order=2; customer_id=C184; customer_name=Khach_Hang_184; demand_kg=2.800000; arrival=07:29; service_start=07:29; service_end=07:36; window=07:20-15:28; travel_from_previous_min=6; waiting_min=0; distance_from_previous_km=4.481604; hard_feasible=True
+- order=3; customer_id=C121; customer_name=Khach_Hang_121; demand_kg=0.700000; arrival=07:39; service_start=18:30; service_end=18:37; window=18:30-21:30; travel_from_previous_min=3; waiting_min=651; distance_from_previous_km=1.837862; hard_feasible=True
+- order=4; customer_id=C133; customer_name=Khach_Hang_133; demand_kg=3.700000; arrival=18:47; service_start=18:47; service_end=18:54; window=18:30-21:30; travel_from_previous_min=10; waiting_min=0; distance_from_previous_km=8.070291; hard_feasible=True
+- order=5; customer_id=C250; customer_name=Khach_Hang_250; demand_kg=3.200000; arrival=18:59; service_start=18:59; service_end=19:04; window=18:30-21:30; travel_from_previous_min=5; waiting_min=0; distance_from_previous_km=4.150636; hard_feasible=True
+- order=6; customer_id=C031; customer_name=Khach_Hang_031; demand_kg=4.800000; arrival=19:07; service_start=19:07; service_end=19:12; window=18:30-21:30; travel_from_previous_min=3; waiting_min=0; distance_from_previous_km=2.183508; hard_feasible=True
+- order=7; customer_id=C257; customer_name=Khach_Hang_257; demand_kg=1.100000; arrival=19:13; service_start=19:13; service_end=19:20; window=18:30-21:30; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.379199; hard_feasible=True
+- order=8; customer_id=C043; customer_name=Khach_Hang_043; demand_kg=0.700000; arrival=19:22; service_start=19:22; service_end=19:32; window=18:30-21:30; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.622617; hard_feasible=True
+- order=9; customer_id=C023; customer_name=Khach_Hang_023; demand_kg=4.400000; arrival=19:36; service_start=19:36; service_end=19:41; window=18:30-21:30; travel_from_previous_min=4; waiting_min=0; distance_from_previous_km=2.527166; hard_feasible=True
+- order=10; customer_id=C045; customer_name=Khach_Hang_045; demand_kg=2.500000; arrival=19:43; service_start=19:43; service_end=19:50; window=18:30-21:30; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.311771; hard_feasible=True
+- order=11; customer_id=C237; customer_name=Khach_Hang_237; demand_kg=1.400000; arrival=19:51; service_start=19:51; service_end=19:56; window=18:30-21:30; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.738914; hard_feasible=True
+- order=12; customer_id=C290; customer_name=Khach_Hang_290; demand_kg=0.800000; arrival=19:58; service_start=19:58; service_end=20:08; window=18:30-21:30; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.048958; hard_feasible=True
+- order=13; customer_id=C116; customer_name=Khach_Hang_116; demand_kg=4.100000; arrival=20:10; service_start=20:10; service_end=20:20; window=18:30-21:30; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.243179; hard_feasible=True
+- order=14; customer_id=C193; customer_name=Khach_Hang_193; demand_kg=1.200000; arrival=20:25; service_start=20:25; service_end=20:30; window=18:30-21:30; travel_from_previous_min=5; waiting_min=0; distance_from_previous_km=4.126107; hard_feasible=True
+- order=15; customer_id=C012; customer_name=Khach_Hang_012; demand_kg=1.700000; arrival=20:31; service_start=20:31; service_end=20:41; window=18:30-21:30; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.675158; hard_feasible=True
+- order=16; customer_id=C200; customer_name=Khach_Hang_200; demand_kg=0.900000; arrival=20:53; service_start=20:53; service_end=21:03; window=18:30-21:30; travel_from_previous_min=12; waiting_min=0; distance_from_previous_km=9.936877; hard_feasible=True
+- order=17; customer_id=C036; customer_name=Khach_Hang_036; demand_kg=2.800000; arrival=21:09; service_start=21:09; service_end=21:14; window=18:30-21:30; travel_from_previous_min=6; waiting_min=0; distance_from_previous_km=4.317607; hard_feasible=True
+
+day=4
+route=C201 -> C230 -> C106 -> C186 -> C258 -> C220 -> C083 -> C128 -> C173 -> C281 -> C137 -> C099 -> C113 -> C168 -> C157 -> C104 -> C163 -> C219
+depot_departure=08:54
+return_to_depot=21:44
+route_duration_min=770
+route_distance_km=101.967723
+route_travel_time_min=132
+route_waiting_time_min=506
+route_service_time_min=132
+delivered_demand_kg=57.400000
+vehicle_capacity_kg=ignored
+hard_feasible=True
+stops
+- order=1; customer_id=C201; customer_name=Khach_Hang_201; demand_kg=4.600000; arrival=09:05; service_start=09:05; service_end=09:10; window=09:05-17:32; travel_from_previous_min=11; waiting_min=0; distance_from_previous_km=8.443737; hard_feasible=True
+- order=2; customer_id=C230; customer_name=Khach_Hang_230; demand_kg=1.200000; arrival=09:13; service_start=09:13; service_end=09:20; window=08:44-17:39; travel_from_previous_min=3; waiting_min=0; distance_from_previous_km=2.284540; hard_feasible=True
+- order=3; customer_id=C106; customer_name=Khach_Hang_106; demand_kg=4.300000; arrival=09:22; service_start=09:22; service_end=09:29; window=09:02-15:56; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.433331; hard_feasible=True
+- order=4; customer_id=C186; customer_name=Khach_Hang_186; demand_kg=4.400000; arrival=09:37; service_start=09:37; service_end=09:44; window=08:30-11:30; travel_from_previous_min=8; waiting_min=0; distance_from_previous_km=5.900022; hard_feasible=True
+- order=5; customer_id=C258; customer_name=Khach_Hang_258; demand_kg=0.700000; arrival=09:49; service_start=09:49; service_end=09:56; window=09:24-15:26; travel_from_previous_min=5; waiting_min=0; distance_from_previous_km=4.090442; hard_feasible=True
+- order=6; customer_id=C220; customer_name=Khach_Hang_220; demand_kg=4.100000; arrival=10:04; service_start=18:30; service_end=18:37; window=18:30-21:30; travel_from_previous_min=8; waiting_min=506; distance_from_previous_km=5.995652; hard_feasible=True
+- order=7; customer_id=C083; customer_name=Khach_Hang_083; demand_kg=1.300000; arrival=18:48; service_start=18:48; service_end=18:55; window=18:30-21:30; travel_from_previous_min=11; waiting_min=0; distance_from_previous_km=9.020665; hard_feasible=True
+- order=8; customer_id=C128; customer_name=Khach_Hang_128; demand_kg=4.200000; arrival=19:15; service_start=19:15; service_end=19:20; window=18:30-21:30; travel_from_previous_min=20; waiting_min=0; distance_from_previous_km=16.150629; hard_feasible=True
+- order=9; customer_id=C173; customer_name=Khach_Hang_173; demand_kg=3.400000; arrival=19:21; service_start=19:21; service_end=19:28; window=18:30-21:30; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.800924; hard_feasible=True
+- order=10; customer_id=C281; customer_name=Khach_Hang_281; demand_kg=2.900000; arrival=19:32; service_start=19:32; service_end=19:39; window=18:30-21:30; travel_from_previous_min=4; waiting_min=0; distance_from_previous_km=2.757032; hard_feasible=True
+- order=11; customer_id=C137; customer_name=Khach_Hang_137; demand_kg=3.200000; arrival=19:46; service_start=19:46; service_end=19:53; window=18:30-21:30; travel_from_previous_min=7; waiting_min=0; distance_from_previous_km=5.160258; hard_feasible=True
+- order=12; customer_id=C099; customer_name=Khach_Hang_099; demand_kg=3.300000; arrival=20:03; service_start=20:03; service_end=20:08; window=18:30-21:30; travel_from_previous_min=10; waiting_min=0; distance_from_previous_km=7.897232; hard_feasible=True
+- order=13; customer_id=C113; customer_name=Khach_Hang_113; demand_kg=1.800000; arrival=20:21; service_start=20:21; service_end=20:28; window=18:30-21:30; travel_from_previous_min=13; waiting_min=0; distance_from_previous_km=10.190125; hard_feasible=True
+- order=14; customer_id=C168; customer_name=Khach_Hang_168; demand_kg=3.600000; arrival=20:29; service_start=20:29; service_end=20:39; window=18:30-21:30; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.152649; hard_feasible=True
+- order=15; customer_id=C157; customer_name=Khach_Hang_157; demand_kg=3.200000; arrival=20:42; service_start=20:42; service_end=20:52; window=18:30-21:30; travel_from_previous_min=3; waiting_min=0; distance_from_previous_km=1.726736; hard_feasible=True
+- order=16; customer_id=C104; customer_name=Khach_Hang_104; demand_kg=3.300000; arrival=20:55; service_start=20:55; service_end=21:05; window=18:30-21:30; travel_from_previous_min=3; waiting_min=0; distance_from_previous_km=2.168365; hard_feasible=True
+- order=17; customer_id=C163; customer_name=Khach_Hang_163; demand_kg=3.700000; arrival=21:06; service_start=21:06; service_end=21:16; window=18:30-21:30; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.770094; hard_feasible=True
+- order=18; customer_id=C219; customer_name=Khach_Hang_219; demand_kg=4.200000; arrival=21:18; service_start=21:18; service_end=21:25; window=18:30-21:30; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.422438; hard_feasible=True
+
+day=5
+route=C008 -> C228 -> C247 -> C110 -> C054 -> C090 -> C131 -> C190 -> C001 -> C195 -> C261 -> C153 -> C037 -> C127 -> C244 -> C082 -> C042 -> C066 -> C123 -> C118 -> C018
+depot_departure=08:23
+return_to_depot=21:49
+route_duration_min=806
+route_distance_km=77.600071
+route_travel_time_min=102
+route_waiting_time_min=536
+route_service_time_min=168
+delivered_demand_kg=47.100000
+vehicle_capacity_kg=ignored
+hard_feasible=True
+stops
+- order=1; customer_id=C008; customer_name=Khach_Hang_008; demand_kg=4.200000; arrival=08:30; service_start=08:30; service_end=08:40; window=08:30-11:30; travel_from_previous_min=7; waiting_min=0; distance_from_previous_km=5.825003; hard_feasible=True
+- order=2; customer_id=C228; customer_name=Khach_Hang_228; demand_kg=0.900000; arrival=08:45; service_start=08:45; service_end=08:55; window=08:30-11:30; travel_from_previous_min=5; waiting_min=0; distance_from_previous_km=4.123745; hard_feasible=True
+- order=3; customer_id=C247; customer_name=Khach_Hang_247; demand_kg=0.800000; arrival=09:05; service_start=09:05; service_end=09:10; window=08:30-11:30; travel_from_previous_min=10; waiting_min=0; distance_from_previous_km=8.305431; hard_feasible=True
+- order=4; customer_id=C110; customer_name=Khach_Hang_110; demand_kg=2.300000; arrival=09:12; service_start=09:12; service_end=09:22; window=07:09-17:02; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=0.857489; hard_feasible=True
+- order=5; customer_id=C054; customer_name=Khach_Hang_054; demand_kg=2.800000; arrival=09:23; service_start=09:23; service_end=09:33; window=08:30-11:30; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.768632; hard_feasible=True
+- order=6; customer_id=C090; customer_name=Khach_Hang_090; demand_kg=2.000000; arrival=09:34; service_start=18:30; service_end=18:40; window=18:30-21:30; travel_from_previous_min=1; waiting_min=536; distance_from_previous_km=0.398406; hard_feasible=True
+- order=7; customer_id=C131; customer_name=Khach_Hang_131; demand_kg=0.800000; arrival=18:41; service_start=18:41; service_end=18:51; window=18:30-21:30; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.757367; hard_feasible=True
+- order=8; customer_id=C190; customer_name=Khach_Hang_190; demand_kg=4.400000; arrival=18:53; service_start=18:53; service_end=19:03; window=18:30-21:30; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=0.885973; hard_feasible=True
+- order=9; customer_id=C001; customer_name=Khach_Hang_001; demand_kg=0.600000; arrival=19:05; service_start=19:05; service_end=19:10; window=18:30-21:30; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.307964; hard_feasible=True
+- order=10; customer_id=C195; customer_name=Khach_Hang_195; demand_kg=0.600000; arrival=19:12; service_start=19:12; service_end=19:17; window=18:30-21:30; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.483179; hard_feasible=True
+- order=11; customer_id=C261; customer_name=Khach_Hang_261; demand_kg=3.100000; arrival=19:19; service_start=19:19; service_end=19:26; window=18:30-21:30; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.258424; hard_feasible=True
+- order=12; customer_id=C153; customer_name=Khach_Hang_153; demand_kg=2.500000; arrival=19:29; service_start=19:29; service_end=19:34; window=18:30-21:30; travel_from_previous_min=3; waiting_min=0; distance_from_previous_km=2.113158; hard_feasible=True
+- order=13; customer_id=C037; customer_name=Khach_Hang_037; demand_kg=0.600000; arrival=19:36; service_start=19:36; service_end=19:46; window=18:30-21:30; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.351763; hard_feasible=True
+- order=14; customer_id=C127; customer_name=Khach_Hang_127; demand_kg=3.100000; arrival=19:47; service_start=19:47; service_end=19:54; window=18:30-21:30; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.606116; hard_feasible=True
+- order=15; customer_id=C244; customer_name=Khach_Hang_244; demand_kg=2.800000; arrival=19:56; service_start=19:56; service_end=20:06; window=18:30-21:30; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.401851; hard_feasible=True
+- order=16; customer_id=C082; customer_name=Khach_Hang_082; demand_kg=3.600000; arrival=20:08; service_start=20:08; service_end=20:18; window=18:30-21:30; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.331945; hard_feasible=True
+- order=17; customer_id=C042; customer_name=Khach_Hang_042; demand_kg=2.400000; arrival=20:25; service_start=20:25; service_end=20:32; window=18:30-21:30; travel_from_previous_min=7; waiting_min=0; distance_from_previous_km=5.483167; hard_feasible=True
+- order=18; customer_id=C066; customer_name=Khach_Hang_066; demand_kg=3.800000; arrival=20:53; service_start=20:53; service_end=20:58; window=18:30-21:30; travel_from_previous_min=21; waiting_min=0; distance_from_previous_km=17.061070; hard_feasible=True
+- order=19; customer_id=C123; customer_name=Khach_Hang_123; demand_kg=3.300000; arrival=21:01; service_start=21:01; service_end=21:06; window=18:30-21:30; travel_from_previous_min=3; waiting_min=0; distance_from_previous_km=1.750781; hard_feasible=True
+- order=20; customer_id=C118; customer_name=Khach_Hang_118; demand_kg=0.900000; arrival=21:08; service_start=21:08; service_end=21:15; window=18:30-21:30; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.316276; hard_feasible=True
+- order=21; customer_id=C018; customer_name=Khach_Hang_018; demand_kg=1.600000; arrival=21:17; service_start=21:17; service_end=21:27; window=18:30-21:30; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.573578; hard_feasible=True
+
+day=6
+route=C145 -> C198 -> C103 -> C206 -> C179 -> C107 -> C068 -> C005 -> C144 -> C135 -> C216 -> C208 -> C120 -> C139 -> C274 -> C176 -> C100 -> C050 -> C187 -> C177 -> C138 -> C299 -> C264 -> C044 -> C109 -> C246 -> C266 -> C252 -> C148 -> C284 -> C155 -> C272 -> C249 -> C094 -> C224 -> C003 -> C065 -> C112 -> C105 -> C182 -> C141 -> C147 -> C213 -> C222 -> C074 -> C227 -> C159 -> C185 -> C263 -> C047 -> C004 -> C093 -> C282 -> C172 -> C165 -> C259 -> C080 -> C191 -> C089 -> C097 -> C253 -> C207 -> C067 -> C225 -> C199 -> C248 -> C164
+depot_departure=07:52
+return_to_depot=21:19
+route_duration_min=807
+route_distance_km=236.389531
+route_travel_time_min=317
+route_waiting_time_min=0
+route_service_time_min=490
+delivered_demand_kg=171.600000
+vehicle_capacity_kg=ignored
+hard_feasible=True
+stops
+- order=1; customer_id=C145; customer_name=Khach_Hang_145; demand_kg=2.500000; arrival=08:00; service_start=08:00; service_end=08:07; window=08:00-21:00; travel_from_previous_min=8; waiting_min=0; distance_from_previous_km=6.554676; hard_feasible=True
+- order=2; customer_id=C198; customer_name=Khach_Hang_198; demand_kg=3.700000; arrival=08:17; service_start=08:17; service_end=08:24; window=07:01-14:42; travel_from_previous_min=10; waiting_min=0; distance_from_previous_km=7.725959; hard_feasible=True
+- order=3; customer_id=C103; customer_name=Khach_Hang_103; demand_kg=3.500000; arrival=08:29; service_start=08:29; service_end=08:39; window=08:00-21:00; travel_from_previous_min=5; waiting_min=0; distance_from_previous_km=3.429748; hard_feasible=True
+- order=4; customer_id=C206; customer_name=Khach_Hang_206; demand_kg=3.500000; arrival=08:42; service_start=08:42; service_end=08:49; window=08:42-16:58; travel_from_previous_min=3; waiting_min=0; distance_from_previous_km=2.362417; hard_feasible=True
+- order=5; customer_id=C179; customer_name=Khach_Hang_179; demand_kg=3.900000; arrival=08:50; service_start=08:50; service_end=08:55; window=08:24-16:48; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.415538; hard_feasible=True
+- order=6; customer_id=C107; customer_name=Khach_Hang_107; demand_kg=3.300000; arrival=08:56; service_start=08:56; service_end=09:03; window=07:13-13:38; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.404882; hard_feasible=True
+- order=7; customer_id=C068; customer_name=Khach_Hang_068; demand_kg=2.800000; arrival=09:04; service_start=09:04; service_end=09:11; window=07:40-15:32; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.202146; hard_feasible=True
+- order=8; customer_id=C005; customer_name=Khach_Hang_005; demand_kg=1.200000; arrival=09:12; service_start=09:12; service_end=09:19; window=08:15-17:51; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.595959; hard_feasible=True
+- order=9; customer_id=C144; customer_name=Khach_Hang_144; demand_kg=3.000000; arrival=09:20; service_start=09:20; service_end=09:27; window=09:08-16:22; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.669404; hard_feasible=True
+- order=10; customer_id=C135; customer_name=Khach_Hang_135; demand_kg=4.200000; arrival=09:28; service_start=09:28; service_end=09:38; window=07:17-17:16; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.709949; hard_feasible=True
+- order=11; customer_id=C216; customer_name=Khach_Hang_216; demand_kg=0.700000; arrival=09:39; service_start=09:39; service_end=09:46; window=07:42-17:40; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.158422; hard_feasible=True
+- order=12; customer_id=C208; customer_name=Khach_Hang_208; demand_kg=3.600000; arrival=09:48; service_start=09:48; service_end=09:55; window=08:00-21:00; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.423768; hard_feasible=True
+- order=13; customer_id=C120; customer_name=Khach_Hang_120; demand_kg=1.800000; arrival=09:58; service_start=09:58; service_end=10:05; window=08:00-21:00; travel_from_previous_min=3; waiting_min=0; distance_from_previous_km=2.037892; hard_feasible=True
+- order=14; customer_id=C139; customer_name=Khach_Hang_139; demand_kg=1.800000; arrival=10:07; service_start=10:07; service_end=10:17; window=08:00-21:00; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=0.974042; hard_feasible=True
+- order=15; customer_id=C274; customer_name=Khach_Hang_274; demand_kg=1.000000; arrival=10:18; service_start=10:18; service_end=10:25; window=09:42-18:57; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.661830; hard_feasible=True
+- order=16; customer_id=C176; customer_name=Khach_Hang_176; demand_kg=0.900000; arrival=10:27; service_start=10:27; service_end=10:34; window=08:57-17:21; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.197917; hard_feasible=True
+- order=17; customer_id=C100; customer_name=Khach_Hang_100; demand_kg=2.300000; arrival=10:36; service_start=10:36; service_end=10:41; window=09:02-17:16; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=0.965400; hard_feasible=True
+- order=18; customer_id=C050; customer_name=Khach_Hang_050; demand_kg=1.700000; arrival=10:42; service_start=10:42; service_end=10:49; window=08:00-21:00; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.711636; hard_feasible=True
+- order=19; customer_id=C187; customer_name=Khach_Hang_187; demand_kg=2.000000; arrival=10:51; service_start=10:51; service_end=11:01; window=09:42-16:21; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.608720; hard_feasible=True
+- order=20; customer_id=C177; customer_name=Khach_Hang_177; demand_kg=4.400000; arrival=11:06; service_start=11:06; service_end=11:11; window=08:00-21:00; travel_from_previous_min=5; waiting_min=0; distance_from_previous_km=4.079350; hard_feasible=True
+- order=21; customer_id=C138; customer_name=Khach_Hang_138; demand_kg=1.300000; arrival=11:12; service_start=11:12; service_end=11:17; window=08:00-21:00; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.330859; hard_feasible=True
+- order=22; customer_id=C299; customer_name=Khach_Hang_299; demand_kg=3.600000; arrival=11:23; service_start=11:23; service_end=11:28; window=08:00-21:00; travel_from_previous_min=6; waiting_min=0; distance_from_previous_km=4.377036; hard_feasible=True
+- order=23; customer_id=C264; customer_name=Khach_Hang_264; demand_kg=2.100000; arrival=11:36; service_start=11:36; service_end=11:41; window=09:35-17:45; travel_from_previous_min=8; waiting_min=0; distance_from_previous_km=5.961803; hard_feasible=True
+- order=24; customer_id=C044; customer_name=Khach_Hang_044; demand_kg=3.800000; arrival=11:44; service_start=11:44; service_end=11:49; window=07:47-15:54; travel_from_previous_min=3; waiting_min=0; distance_from_previous_km=1.946897; hard_feasible=True
+- order=25; customer_id=C109; customer_name=Khach_Hang_109; demand_kg=2.200000; arrival=11:57; service_start=11:57; service_end=12:02; window=08:00-21:00; travel_from_previous_min=8; waiting_min=0; distance_from_previous_km=6.062169; hard_feasible=True
+- order=26; customer_id=C246; customer_name=Khach_Hang_246; demand_kg=2.300000; arrival=12:19; service_start=12:19; service_end=12:29; window=08:11-17:08; travel_from_previous_min=17; waiting_min=0; distance_from_previous_km=13.666336; hard_feasible=True
+- order=27; customer_id=C266; customer_name=Khach_Hang_266; demand_kg=2.200000; arrival=12:33; service_start=12:33; service_end=12:40; window=09:25-17:12; travel_from_previous_min=4; waiting_min=0; distance_from_previous_km=2.545298; hard_feasible=True
+- order=28; customer_id=C252; customer_name=Khach_Hang_252; demand_kg=2.400000; arrival=13:06; service_start=13:06; service_end=13:13; window=09:46-16:28; travel_from_previous_min=26; waiting_min=0; distance_from_previous_km=21.161715; hard_feasible=True
+- order=29; customer_id=C148; customer_name=Khach_Hang_148; demand_kg=3.200000; arrival=13:29; service_start=13:29; service_end=13:39; window=07:57-15:13; travel_from_previous_min=16; waiting_min=0; distance_from_previous_km=13.321643; hard_feasible=True
+- order=30; customer_id=C284; customer_name=Khach_Hang_284; demand_kg=4.800000; arrival=13:41; service_start=13:41; service_end=13:51; window=07:11-16:50; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.419624; hard_feasible=True
+- order=31; customer_id=C155; customer_name=Khach_Hang_155; demand_kg=3.300000; arrival=13:52; service_start=13:52; service_end=13:57; window=08:00-21:00; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.393591; hard_feasible=True
+- order=32; customer_id=C272; customer_name=Khach_Hang_272; demand_kg=1.900000; arrival=13:58; service_start=13:58; service_end=14:03; window=08:00-21:00; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.612186; hard_feasible=True
+- order=33; customer_id=C249; customer_name=Khach_Hang_249; demand_kg=2.000000; arrival=14:04; service_start=14:04; service_end=14:14; window=08:12-15:38; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.322222; hard_feasible=True
+- order=34; customer_id=C094; customer_name=Khach_Hang_094; demand_kg=3.400000; arrival=14:15; service_start=14:15; service_end=14:22; window=08:00-21:00; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.544783; hard_feasible=True
+- order=35; customer_id=C224; customer_name=Khach_Hang_224; demand_kg=2.200000; arrival=14:23; service_start=14:23; service_end=14:33; window=08:01-15:19; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.697561; hard_feasible=True
+- order=36; customer_id=C003; customer_name=Khach_Hang_003; demand_kg=2.400000; arrival=14:34; service_start=14:34; service_end=14:41; window=08:24-17:52; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.809345; hard_feasible=True
+- order=37; customer_id=C065; customer_name=Khach_Hang_065; demand_kg=1.000000; arrival=14:43; service_start=14:43; service_end=14:48; window=08:00-21:00; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=0.857900; hard_feasible=True
+- order=38; customer_id=C112; customer_name=Khach_Hang_112; demand_kg=0.600000; arrival=14:50; service_start=14:50; service_end=15:00; window=09:19-17:33; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.366021; hard_feasible=True
+- order=39; customer_id=C105; customer_name=Khach_Hang_105; demand_kg=2.500000; arrival=15:04; service_start=15:04; service_end=15:09; window=08:00-21:00; travel_from_previous_min=4; waiting_min=0; distance_from_previous_km=2.530822; hard_feasible=True
+- order=40; customer_id=C182; customer_name=Khach_Hang_182; demand_kg=0.600000; arrival=15:13; service_start=15:13; service_end=15:20; window=08:41-18:38; travel_from_previous_min=4; waiting_min=0; distance_from_previous_km=2.643449; hard_feasible=True
+- order=41; customer_id=C141; customer_name=Khach_Hang_141; demand_kg=3.900000; arrival=15:21; service_start=15:21; service_end=15:31; window=09:37-18:53; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.421407; hard_feasible=True
+- order=42; customer_id=C147; customer_name=Khach_Hang_147; demand_kg=1.300000; arrival=15:37; service_start=15:37; service_end=15:42; window=07:44-16:24; travel_from_previous_min=6; waiting_min=0; distance_from_previous_km=4.425085; hard_feasible=True
+- order=43; customer_id=C213; customer_name=Khach_Hang_213; demand_kg=1.500000; arrival=15:48; service_start=15:48; service_end=15:55; window=08:00-21:00; travel_from_previous_min=6; waiting_min=0; distance_from_previous_km=4.947012; hard_feasible=True
+- order=44; customer_id=C222; customer_name=Khach_Hang_222; demand_kg=2.100000; arrival=15:59; service_start=15:59; service_end=16:06; window=09:36-17:16; travel_from_previous_min=4; waiting_min=0; distance_from_previous_km=3.105419; hard_feasible=True
+- order=45; customer_id=C074; customer_name=Khach_Hang_074; demand_kg=4.500000; arrival=16:16; service_start=16:16; service_end=16:21; window=08:00-21:00; travel_from_previous_min=10; waiting_min=0; distance_from_previous_km=7.969772; hard_feasible=True
+- order=46; customer_id=C227; customer_name=Khach_Hang_227; demand_kg=2.300000; arrival=16:50; service_start=16:50; service_end=16:55; window=08:20-17:55; travel_from_previous_min=29; waiting_min=0; distance_from_previous_km=23.753411; hard_feasible=True
+- order=47; customer_id=C159; customer_name=Khach_Hang_159; demand_kg=3.300000; arrival=17:00; service_start=17:00; service_end=17:10; window=08:00-21:00; travel_from_previous_min=5; waiting_min=0; distance_from_previous_km=3.593347; hard_feasible=True
+- order=48; customer_id=C185; customer_name=Khach_Hang_185; demand_kg=3.000000; arrival=17:14; service_start=17:14; service_end=17:21; window=08:00-21:00; travel_from_previous_min=4; waiting_min=0; distance_from_previous_km=2.598899; hard_feasible=True
+- order=49; customer_id=C263; customer_name=Khach_Hang_263; demand_kg=1.300000; arrival=17:30; service_start=17:30; service_end=17:40; window=08:00-21:00; travel_from_previous_min=9; waiting_min=0; distance_from_previous_km=6.786055; hard_feasible=True
+- order=50; customer_id=C047; customer_name=Khach_Hang_047; demand_kg=3.400000; arrival=17:49; service_start=17:49; service_end=17:59; window=08:00-21:00; travel_from_previous_min=9; waiting_min=0; distance_from_previous_km=7.144174; hard_feasible=True
+- order=51; customer_id=C004; customer_name=Khach_Hang_004; demand_kg=3.900000; arrival=18:08; service_start=18:08; service_end=18:13; window=08:00-21:00; travel_from_previous_min=9; waiting_min=0; distance_from_previous_km=7.241099; hard_feasible=True
+- order=52; customer_id=C093; customer_name=Khach_Hang_093; demand_kg=1.900000; arrival=18:16; service_start=18:16; service_end=18:21; window=08:00-21:00; travel_from_previous_min=3; waiting_min=0; distance_from_previous_km=2.313676; hard_feasible=True
+- order=53; customer_id=C282; customer_name=Khach_Hang_282; demand_kg=2.000000; arrival=18:22; service_start=18:22; service_end=18:27; window=08:00-21:00; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.631579; hard_feasible=True
+- order=54; customer_id=C172; customer_name=Khach_Hang_172; demand_kg=2.600000; arrival=18:28; service_start=18:28; service_end=18:38; window=08:00-21:00; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.759777; hard_feasible=True
+- order=55; customer_id=C165; customer_name=Khach_Hang_165; demand_kg=2.400000; arrival=18:40; service_start=18:40; service_end=18:50; window=08:00-21:00; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.171162; hard_feasible=True
+- order=56; customer_id=C259; customer_name=Khach_Hang_259; demand_kg=3.100000; arrival=18:52; service_start=18:52; service_end=18:57; window=08:00-21:00; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.131030; hard_feasible=True
+- order=57; customer_id=C080; customer_name=Khach_Hang_080; demand_kg=1.500000; arrival=18:58; service_start=18:58; service_end=19:08; window=08:00-21:00; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.673118; hard_feasible=True
+- order=58; customer_id=C191; customer_name=Khach_Hang_191; demand_kg=4.400000; arrival=19:09; service_start=19:09; service_end=19:16; window=08:00-21:00; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.269867; hard_feasible=True
+- order=59; customer_id=C089; customer_name=Khach_Hang_089; demand_kg=3.700000; arrival=19:19; service_start=19:19; service_end=19:26; window=08:00-21:00; travel_from_previous_min=3; waiting_min=0; distance_from_previous_km=1.742755; hard_feasible=True
+- order=60; customer_id=C097; customer_name=Khach_Hang_097; demand_kg=3.500000; arrival=19:28; service_start=19:28; service_end=19:33; window=08:00-21:00; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.011922; hard_feasible=True
+- order=61; customer_id=C253; customer_name=Khach_Hang_253; demand_kg=1.900000; arrival=19:35; service_start=19:35; service_end=19:42; window=08:00-21:00; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.393008; hard_feasible=True
+- order=62; customer_id=C207; customer_name=Khach_Hang_207; demand_kg=0.800000; arrival=19:45; service_start=19:45; service_end=19:52; window=08:00-21:00; travel_from_previous_min=3; waiting_min=0; distance_from_previous_km=1.886196; hard_feasible=True
+- order=63; customer_id=C067; customer_name=Khach_Hang_067; demand_kg=3.700000; arrival=19:54; service_start=19:54; service_end=19:59; window=08:00-21:00; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.576631; hard_feasible=True
+- order=64; customer_id=C225; customer_name=Khach_Hang_225; demand_kg=2.600000; arrival=20:01; service_start=20:01; service_end=20:11; window=08:00-21:00; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.595466; hard_feasible=True
+- order=65; customer_id=C199; customer_name=Khach_Hang_199; demand_kg=1.600000; arrival=20:13; service_start=20:13; service_end=20:23; window=08:00-21:00; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.059922; hard_feasible=True
+- order=66; customer_id=C248; customer_name=Khach_Hang_248; demand_kg=1.100000; arrival=20:27; service_start=20:27; service_end=20:37; window=08:00-21:00; travel_from_previous_min=4; waiting_min=0; distance_from_previous_km=3.259506; hard_feasible=True
+- order=67; customer_id=C164; customer_name=Khach_Hang_164; demand_kg=4.700000; arrival=20:40; service_start=20:40; service_end=20:50; window=08:00-21:00; travel_from_previous_min=3; waiting_min=0; distance_from_previous_km=1.750781; hard_feasible=True
+
+day=7
+route=C033 -> C017 -> C024 -> C205 -> C058 -> C088 -> C251 -> C064 -> C019 -> C013 -> C212 -> C029 -> C079 -> C196 -> C240 -> C279 -> C020 -> C021 -> C292 -> C298 -> C136 -> C161 -> C022 -> C025 -> C256 -> C092 -> C052 -> C215 -> C032 -> C126 -> C160 -> C254 -> C149 -> C075 -> C111 -> C028 -> C178 -> C277 -> C273
+depot_departure=08:09
+return_to_depot=17:16
+route_duration_min=547
+route_distance_km=183.026831
+route_travel_time_min=236
+route_waiting_time_min=15
+route_service_time_min=296
+delivered_demand_kg=124.100000
+vehicle_capacity_kg=ignored
+hard_feasible=True
+stops
+- order=1; customer_id=C033; customer_name=Khach_Hang_033; demand_kg=2.600000; arrival=08:23; service_start=08:23; service_end=08:33; window=08:23-17:12; travel_from_previous_min=14; waiting_min=0; distance_from_previous_km=11.419667; hard_feasible=True
+- order=2; customer_id=C017; customer_name=Khach_Hang_017; demand_kg=2.700000; arrival=08:34; service_start=08:34; service_end=08:44; window=07:09-14:22; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.399234; hard_feasible=True
+- order=3; customer_id=C024; customer_name=Khach_Hang_024; demand_kg=4.500000; arrival=08:45; service_start=09:00; service_end=09:07; window=09:00-15:11; travel_from_previous_min=1; waiting_min=15; distance_from_previous_km=0.810033; hard_feasible=True
+- order=4; customer_id=C205; customer_name=Khach_Hang_205; demand_kg=1.100000; arrival=09:08; service_start=09:08; service_end=09:15; window=08:04-16:52; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.781259; hard_feasible=True
+- order=5; customer_id=C058; customer_name=Khach_Hang_058; demand_kg=2.900000; arrival=09:16; service_start=09:16; service_end=09:23; window=08:00-21:00; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.611494; hard_feasible=True
+- order=6; customer_id=C088; customer_name=Khach_Hang_088; demand_kg=4.600000; arrival=09:25; service_start=09:25; service_end=09:35; window=08:00-21:00; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.634330; hard_feasible=True
+- order=7; customer_id=C251; customer_name=Khach_Hang_251; demand_kg=3.400000; arrival=09:39; service_start=09:39; service_end=09:49; window=08:56-14:56; travel_from_previous_min=4; waiting_min=0; distance_from_previous_km=3.192314; hard_feasible=True
+- order=8; customer_id=C064; customer_name=Khach_Hang_064; demand_kg=2.900000; arrival=09:51; service_start=09:51; service_end=10:01; window=08:00-21:00; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.548950; hard_feasible=True
+- order=9; customer_id=C019; customer_name=Khach_Hang_019; demand_kg=2.400000; arrival=10:06; service_start=10:06; service_end=10:16; window=08:00-21:00; travel_from_previous_min=5; waiting_min=0; distance_from_previous_km=3.708086; hard_feasible=True
+- order=10; customer_id=C013; customer_name=Khach_Hang_013; demand_kg=1.300000; arrival=10:17; service_start=10:17; service_end=10:27; window=07:26-16:28; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.587761; hard_feasible=True
+- order=11; customer_id=C212; customer_name=Khach_Hang_212; demand_kg=4.600000; arrival=10:45; service_start=10:45; service_end=10:55; window=08:00-21:00; travel_from_previous_min=18; waiting_min=0; distance_from_previous_km=14.664541; hard_feasible=True
+- order=12; customer_id=C029; customer_name=Khach_Hang_029; demand_kg=3.200000; arrival=11:04; service_start=11:04; service_end=11:11; window=08:00-21:00; travel_from_previous_min=9; waiting_min=0; distance_from_previous_km=6.813846; hard_feasible=True
+- order=13; customer_id=C079; customer_name=Khach_Hang_079; demand_kg=4.200000; arrival=11:46; service_start=11:46; service_end=11:53; window=08:00-21:00; travel_from_previous_min=35; waiting_min=0; distance_from_previous_km=29.067537; hard_feasible=True
+- order=14; customer_id=C196; customer_name=Khach_Hang_196; demand_kg=4.000000; arrival=12:03; service_start=12:03; service_end=12:10; window=08:00-21:00; travel_from_previous_min=10; waiting_min=0; distance_from_previous_km=7.888079; hard_feasible=True
+- order=15; customer_id=C240; customer_name=Khach_Hang_240; demand_kg=3.500000; arrival=12:24; service_start=12:24; service_end=12:29; window=08:00-21:00; travel_from_previous_min=14; waiting_min=0; distance_from_previous_km=11.592088; hard_feasible=True
+- order=16; customer_id=C279; customer_name=Khach_Hang_279; demand_kg=4.800000; arrival=12:31; service_start=12:31; service_end=12:36; window=08:00-21:00; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.295849; hard_feasible=True
+- order=17; customer_id=C020; customer_name=Khach_Hang_020; demand_kg=2.800000; arrival=12:38; service_start=12:38; service_end=12:43; window=08:00-21:00; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.368693; hard_feasible=True
+- order=18; customer_id=C021; customer_name=Khach_Hang_021; demand_kg=1.200000; arrival=12:45; service_start=12:45; service_end=12:50; window=08:47-17:30; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.541416; hard_feasible=True
+- order=19; customer_id=C292; customer_name=Khach_Hang_292; demand_kg=3.300000; arrival=12:53; service_start=12:53; service_end=13:03; window=08:00-21:00; travel_from_previous_min=3; waiting_min=0; distance_from_previous_km=1.740969; hard_feasible=True
+- order=20; customer_id=C298; customer_name=Khach_Hang_298; demand_kg=2.100000; arrival=13:05; service_start=13:05; service_end=13:12; window=08:00-21:00; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=0.970272; hard_feasible=True
+- order=21; customer_id=C136; customer_name=Khach_Hang_136; demand_kg=4.200000; arrival=13:14; service_start=13:14; service_end=13:19; window=08:00-21:00; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.027762; hard_feasible=True
+- order=22; customer_id=C161; customer_name=Khach_Hang_161; demand_kg=1.300000; arrival=13:20; service_start=13:20; service_end=13:25; window=08:46-16:01; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.769537; hard_feasible=True
+- order=23; customer_id=C022; customer_name=Khach_Hang_022; demand_kg=2.200000; arrival=13:26; service_start=13:26; service_end=13:36; window=09:50-18:41; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.780115; hard_feasible=True
+- order=24; customer_id=C025; customer_name=Khach_Hang_025; demand_kg=1.800000; arrival=13:38; service_start=13:38; service_end=13:43; window=07:11-14:41; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.450581; hard_feasible=True
+- order=25; customer_id=C256; customer_name=Khach_Hang_256; demand_kg=3.000000; arrival=13:47; service_start=13:47; service_end=13:57; window=07:22-16:29; travel_from_previous_min=4; waiting_min=0; distance_from_previous_km=2.750775; hard_feasible=True
+- order=26; customer_id=C092; customer_name=Khach_Hang_092; demand_kg=3.300000; arrival=13:59; service_start=13:59; service_end=14:06; window=07:28-15:14; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=0.946594; hard_feasible=True
+- order=27; customer_id=C052; customer_name=Khach_Hang_052; demand_kg=1.400000; arrival=14:07; service_start=14:07; service_end=14:12; window=09:36-19:22; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.658862; hard_feasible=True
+- order=28; customer_id=C215; customer_name=Khach_Hang_215; demand_kg=3.300000; arrival=14:13; service_start=14:13; service_end=14:23; window=09:01-15:25; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.748186; hard_feasible=True
+- order=29; customer_id=C032; customer_name=Khach_Hang_032; demand_kg=4.900000; arrival=14:26; service_start=14:26; service_end=14:36; window=08:34-18:30; travel_from_previous_min=3; waiting_min=0; distance_from_previous_km=1.683188; hard_feasible=True
+- order=30; customer_id=C126; customer_name=Khach_Hang_126; demand_kg=4.800000; arrival=14:37; service_start=14:37; service_end=14:42; window=09:20-19:13; travel_from_previous_min=1; waiting_min=0; distance_from_previous_km=0.209748; hard_feasible=True
+- order=31; customer_id=C160; customer_name=Khach_Hang_160; demand_kg=3.300000; arrival=14:44; service_start=14:44; service_end=14:51; window=07:25-16:50; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.152673; hard_feasible=True
+- order=32; customer_id=C254; customer_name=Khach_Hang_254; demand_kg=3.600000; arrival=14:53; service_start=14:53; service_end=15:00; window=09:31-16:28; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.179199; hard_feasible=True
+- order=33; customer_id=C149; customer_name=Khach_Hang_149; demand_kg=4.200000; arrival=15:02; service_start=15:02; service_end=15:09; window=08:00-21:00; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.093504; hard_feasible=True
+- order=34; customer_id=C075; customer_name=Khach_Hang_075; demand_kg=2.100000; arrival=15:13; service_start=15:13; service_end=15:23; window=09:11-17:10; travel_from_previous_min=4; waiting_min=0; distance_from_previous_km=2.948847; hard_feasible=True
+- order=35; customer_id=C111; customer_name=Khach_Hang_111; demand_kg=4.200000; arrival=15:25; service_start=15:25; service_end=15:32; window=08:00-21:00; travel_from_previous_min=2; waiting_min=0; distance_from_previous_km=1.644120; hard_feasible=True
+- order=36; customer_id=C028; customer_name=Khach_Hang_028; demand_kg=2.200000; arrival=15:40; service_start=15:40; service_end=15:45; window=08:00-21:00; travel_from_previous_min=8; waiting_min=0; distance_from_previous_km=6.193660; hard_feasible=True
+- order=37; customer_id=C178; customer_name=Khach_Hang_178; demand_kg=2.800000; arrival=15:53; service_start=15:53; service_end=16:03; window=09:21-17:22; travel_from_previous_min=8; waiting_min=0; distance_from_previous_km=6.348746; hard_feasible=True
+- order=38; customer_id=C277; customer_name=Khach_Hang_277; demand_kg=4.600000; arrival=16:26; service_start=16:26; service_end=16:33; window=08:00-21:00; travel_from_previous_min=23; waiting_min=0; distance_from_previous_km=18.745334; hard_feasible=True
+- order=39; customer_id=C273; customer_name=Khach_Hang_273; demand_kg=4.800000; arrival=16:43; service_start=16:43; service_end=16:48; window=08:00-21:00; travel_from_previous_min=10; waiting_min=0; distance_from_previous_km=7.736882; hard_feasible=True

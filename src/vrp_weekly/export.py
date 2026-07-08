@@ -12,6 +12,20 @@ from vrp_weekly.core import EvaluationMetrics, Instance, WeeklySchedule
 from vrp_weekly.time_utils import format_hhmm
 
 
+def solver_status_summary(schedule: WeeklySchedule, metrics: EvaluationMetrics) -> dict[str, object]:
+    """Return solver status suitable for display and exports."""
+    if schedule.solver_status:
+        return dict(schedule.solver_status)
+    return {"status": "HEURISTIC_FEASIBLE" if metrics.hard_feasible else "HEURISTIC_INFEASIBLE", "gap_percent": ""}
+
+
+def format_gap_percent(value: object) -> str:
+    """Format a gap value as a percentage string."""
+    if value in ("", None):
+        return ""
+    return f"{float(value):.2f}%"
+
+
 def solver_results_dir(results_dir: str | Path, solver_name: str) -> Path:
     """Return the canonical output directory for one solver."""
     return Path(results_dir) / "schedules" / solver_name
@@ -61,6 +75,7 @@ def save_result_json(path: str | Path, solver_name: str, schedule: WeeklySchedul
     output_path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "solver": solver_name,
+        "solver_status": solver_status_summary(schedule, metrics),
         "metrics": metrics.to_dict(),
         "schedule": schedule_to_dict(schedule),
     }
@@ -154,16 +169,110 @@ def export_incomplete_orders_csv(path: str | Path, instance: Instance, schedule:
             )
 
 
+def export_result_txt(
+    path: str | Path,
+    solver_name: str,
+    instance: Instance,
+    schedule: WeeklySchedule,
+    metrics: EvaluationMetrics,
+) -> None:
+    """Export a human-readable result report for one model run."""
+    output_path = Path(path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    lines: list[str] = []
+
+    lines.append(f"model={solver_name}")
+    status = solver_status_summary(schedule, metrics)
+    lines.append(f"solver_status={status.get('status', '')}")
+    lines.append(f"gap_percent={format_gap_percent(status.get('gap_percent', ''))}")
+    if "objective" in status:
+        lines.append(f"solver_objective={status['objective']}")
+    if "best_bound" in status:
+        lines.append(f"best_bound={status['best_bound']}")
+    if "day_statuses" in status and isinstance(status["day_statuses"], dict):
+        lines.append("day_solver_statuses")
+        for day, day_status in sorted(status["day_statuses"].items()):
+            if not isinstance(day_status, dict):
+                continue
+            lines.append(
+                f"- day={day}; status={day_status.get('status', '')}; "
+                f"gap_percent={format_gap_percent(day_status.get('gap_percent', ''))}; "
+                f"objective={day_status.get('objective', '')}; best_bound={day_status.get('best_bound', '')}"
+            )
+    lines.append("summary")
+    for key, value in metrics.to_dict().items():
+        if key == "violations":
+            continue
+        if isinstance(value, float):
+            lines.append(f"{key}={value:.6f}")
+        else:
+            lines.append(f"{key}={value}")
+    if metrics.violations:
+        lines.append("violations")
+        for violation in metrics.violations:
+            lines.append(f"- {violation}")
+    lines.append("")
+
+    lines.append("daily_routes")
+    for route in schedule.ordered_routes():
+        delivered_demand_kg = sum(instance.locations[stop.customer_id].demand_kg for stop in route.stops if stop.hard_feasible)
+        sequence = " -> ".join(stop.customer_id for stop in route.stops) if route.stops else "(none)"
+        lines.append(f"day={route.day}")
+        lines.append(f"route={sequence}")
+        lines.append(f"depot_departure={_format_or_blank(route.depot_departure_time)}")
+        lines.append(f"return_to_depot={_format_or_blank(route.return_to_depot_time)}")
+        lines.append(f"route_duration_min={route.route_duration_min}")
+        lines.append(f"route_distance_km={route.route_distance_km:.6f}")
+        lines.append(f"route_travel_time_min={route.route_travel_time_min}")
+        lines.append(f"route_waiting_time_min={route.route_waiting_time_min}")
+        lines.append(f"route_service_time_min={route.route_service_time_min}")
+        lines.append(f"delivered_demand_kg={delivered_demand_kg:.6f}")
+        lines.append("vehicle_capacity_kg=ignored")
+        lines.append(f"hard_feasible={route.hard_feasible}")
+        if route.violations:
+            lines.append("route_violations")
+            for violation in route.violations:
+                lines.append(f"- {violation}")
+        lines.append("stops")
+        if not route.stops:
+            lines.append("- none")
+        for index, stop in enumerate(route.stops, start=1):
+            location = instance.locations[stop.customer_id]
+            window_start = _format_or_blank(stop.selected_time_window.start_minute if stop.selected_time_window else None)
+            window_end = _format_or_blank(stop.selected_time_window.end_minute if stop.selected_time_window else None)
+            lines.append(
+                "- "
+                f"order={index}; "
+                f"customer_id={stop.customer_id}; "
+                f"customer_name={location.location_name}; "
+                f"demand_kg={location.demand_kg:.6f}; "
+                f"arrival={_format_or_blank(stop.arrival_time)}; "
+                f"service_start={_format_or_blank(stop.service_start_time)}; "
+                f"service_end={_format_or_blank(stop.service_end_time)}; "
+                f"window={window_start}-{window_end}; "
+                f"travel_from_previous_min={stop.travel_from_previous_min}; "
+                f"waiting_min={stop.waiting_min}; "
+                f"distance_from_previous_km={stop.distance_from_previous_km:.6f}; "
+                f"hard_feasible={stop.hard_feasible}"
+            )
+        lines.append("")
+
+    output_path.write_text("\n".join(lines), encoding="utf-8")
+
+
 def export_report_files(
     results_dir: str | Path,
     solver_name: str,
     instance: Instance,
     schedule: WeeklySchedule,
+    metrics: EvaluationMetrics | None = None,
 ) -> None:
     """Export report-ready CSV files for one solver schedule."""
     schedules_dir = solver_results_dir(results_dir, solver_name)
     export_daily_schedule_csv(schedules_dir / "daily_schedule.csv", instance, schedule)
     export_incomplete_orders_csv(schedules_dir / "incomplete_orders.csv", instance, schedule)
+    if metrics is not None:
+        export_result_txt(schedules_dir / "result.txt", solver_name, instance, schedule, metrics)
 
 
 def export_benchmark_plots(summary_csv: str | Path, output_dir: str | Path) -> None:

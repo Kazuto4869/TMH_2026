@@ -1,5 +1,9 @@
 {
   "solver": "nearest",
+  "solver_status": {
+    "status": "HEURISTIC_FEASIBLE",
+    "gap_percent": ""
+  },
   "metrics": {
     "delivered_count": 201,
     "incomplete_count": 99,

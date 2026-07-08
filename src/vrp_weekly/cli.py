@@ -8,24 +8,29 @@ import sys
 from pathlib import Path
 
 from vrp_weekly.config import (
-    CP_TIME_LIMIT_PER_DAY_SEC,
     INSERTION_WEIGHT,
     REGRET_WEIGHT,
     URGENCY_WEIGHT,
     WAITING_WEIGHT,
 )
 from vrp_weekly.evaluator import evaluate_weekly_schedule, print_metrics, print_schedule
-from vrp_weekly.export import export_report_files, save_result_json, solver_results_dir
+from vrp_weekly.export import (
+    export_report_files,
+    format_gap_percent,
+    save_result_json,
+    solver_results_dir,
+    solver_status_summary,
+)
 from vrp_weekly.io import load_instance, summarize_instance
 from vrp_weekly.model_factory import create_solver, solver_names
 
 
 def build_parser() -> argparse.ArgumentParser:
     """Build the CLI argument parser."""
-    parser = argparse.ArgumentParser(description="Run a weekly VRP solver.")
+    parser = argparse.ArgumentParser(description="Run a weekly VRP model.")
     parser.add_argument("--locations", required=True, help="Path to locations.csv")
     parser.add_argument("--time-windows", required=True, help="Path to time_windows.csv")
-    parser.add_argument("--solver", choices=solver_names() + ["earliest"], default="nearest", help="Solver to run.")
+    parser.add_argument("--solver", choices=solver_names() + ["earliest", "cp"], default="nearest", help="Model to run.")
     parser.add_argument("--summary", action="store_true", help="Print input data summary and exit unless --solver is explicit.")
     parser.add_argument("--save-results", action="store_true", help="Save result JSON and report CSV files under results/.")
     parser.add_argument("--results-dir", default="results", help="Directory for saved results.")
@@ -34,9 +39,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--regret-weight", type=float, default=REGRET_WEIGHT, help="Regret solver regret weight.")
     parser.add_argument("--insertion-weight", type=float, default=INSERTION_WEIGHT, help="Regret solver insertion weight.")
     parser.add_argument("--waiting-weight", type=float, default=WAITING_WEIGHT, help="Regret solver waiting penalty weight.")
-    parser.add_argument("--cp-time-limit-per-day", type=int, default=CP_TIME_LIMIT_PER_DAY_SEC, help="CP solver time limit per day in seconds.")
-    parser.add_argument("--cp-threads", type=int, default=1, help="CP solver worker thread count when supported by OR-Tools.")
-    parser.add_argument("--cp-log-search", action="store_true", help="Print OR-Tools CP search log to the terminal.")
+    parser.add_argument("--cp-time-limit-sec", type=int, default=60, help="Full-week CP-SAT time limit in seconds.")
+    parser.add_argument("--cp-time-limit-per-day-sec", type=int, default=10, help="Rolling CP-SAT time limit per day in seconds.")
+    parser.add_argument("--cp-time-limit-per-day", type=int, default=None, help="Deprecated alias for --cp-time-limit-per-day-sec.")
+    parser.add_argument("--cp-max-customers", type=int, default=300, help="Limit customers for full-week CP-SAT.")
+    parser.add_argument("--cp-max-candidates-per-day", type=int, default=None, help="Limit daily candidates for rolling CP-SAT.")
+    parser.add_argument("--cp-workers", type=int, default=8, help="CP-SAT worker count.")
+    parser.add_argument("--cp-threads", type=int, default=None, help="Deprecated alias for --cp-workers.")
+    parser.add_argument("--cp-log-search", action="store_true", help="Print OR-Tools CP-SAT search log to the terminal.")
     parser.add_argument("--log-level", default="WARNING", help="Python logging level.")
     return parser
 
@@ -54,28 +64,38 @@ def main(argv: list[str] | None = None) -> int:
         if "--solver" not in raw_args:
             return 0
 
+    cp_workers = args.cp_threads if args.cp_threads is not None else args.cp_workers
+    cp_time_limit_per_day_sec = (
+        args.cp_time_limit_per_day if args.cp_time_limit_per_day is not None else args.cp_time_limit_per_day_sec
+    )
     solver = create_solver(
         args.solver,
         regret_weight=args.regret_weight,
         insertion_weight=args.insertion_weight,
         urgency_weight=args.urgency_weight,
         waiting_weight=args.waiting_weight,
-        cp_time_limit_per_day=args.cp_time_limit_per_day,
-        cp_threads=args.cp_threads,
+        cp_time_limit_sec=args.cp_time_limit_sec,
+        cp_time_limit_per_day_sec=cp_time_limit_per_day_sec,
+        cp_max_customers=args.cp_max_customers,
+        cp_max_candidates_per_day=args.cp_max_candidates_per_day,
+        cp_workers=cp_workers,
         cp_log_search=args.cp_log_search,
         seed=args.seed,
     )
     schedule = solver.solve(instance)
     metrics = evaluate_weekly_schedule(instance, schedule)
+    solver_status = solver_status_summary(schedule, metrics)
 
     print(f"solver={solver.name}")
+    print(f"solver_status={solver_status.get('status', '')}")
+    print(f"gap_percent={format_gap_percent(solver_status.get('gap_percent', ''))}")
     print_schedule(schedule)
     print_metrics(metrics)
 
     if args.save_results:
         results_dir = Path(args.results_dir)
         save_result_json(solver_results_dir(results_dir, solver.name) / "result.json", solver.name, schedule, metrics)
-        export_report_files(results_dir, solver.name, instance, schedule)
+        export_report_files(results_dir, solver.name, instance, schedule, metrics)
         print(f"saved_results={results_dir}")
 
     return 0

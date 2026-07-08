@@ -47,7 +47,7 @@ Core package files:
 - `src/vrp_weekly/time_utils.py`: parses and formats `HH:MM` time strings.
 - `src/vrp_weekly/evaluator.py`: simulates daily routes, selects feasible time windows, validates weekly schedules, calculates metrics, and prints schedules/metrics.
 - `src/vrp_weekly/export.py`: writes result JSON, daily schedule CSV, incomplete order CSV, benchmark CSV, and comparison plots.
-- `src/vrp_weekly/model_factory.py`: maps model names such as `nearest`, `deadline`, `regret`, and `cp` to model classes.
+- `src/vrp_weekly/model_factory.py`: maps model names such as `nearest`, `deadline`, `regret`, `cp_full_week`, and `cp_rolling` to model classes.
 - `src/vrp_weekly/cli.py`: command-line entry point for inspecting data or running one model.
 - `src/vrp_weekly/benchmark.py`: runs multiple models and writes comparison outputs under `results/comparison/`.
 - `src/vrp_weekly/compare_results.py`: compares already-saved result files under `results/schedules/{solver}/result.json` without rerunning models.
@@ -58,15 +58,17 @@ Model files:
 - `src/vrp_weekly/models/nearest.py`: nearest-neighbor greedy baseline.
 - `src/vrp_weekly/models/deadline.py`: earliest-deadline greedy baseline.
 - `src/vrp_weekly/models/regret.py`: rolling-horizon regret insertion model with local search.
-- `src/vrp_weekly/models/cp.py`: daily OR-Tools CP routing model with deadline fallback if OR-Tools is unavailable.
-- `src/vrp_weekly/models/__init__.py`: public imports for the four model classes.
+- `src/vrp_weekly/models/cp_full_week.py`: full-week CP-SAT model for small instances and mathematical-model demonstration.
+- `src/vrp_weekly/models/cp_rolling_horizon.py`: rolling-horizon daily CP-SAT model for practical larger instances.
+- `src/vrp_weekly/models/__init__.py`: public imports for the model classes.
 
 ## Models
 
 - `nearest`: greedy nearest feasible next customer baseline.
 - `deadline`: greedy earliest feasible time-window end baseline, with travel-time tie break.
 - `regret`: rolling-horizon regret-2 insertion with urgency scoring and bounded local search.
-- `cp`: rolling-horizon daily OR-Tools routing model. Each day is solved as a single-vehicle optional-customer model, then evaluated by the same weekly evaluator as the heuristics.
+- `cp_full_week`: full-week CP-SAT model with Boolean delivery/window/arc variables and `AddCircuit`; intended for small instances or demos.
+- `cp_rolling`: rolling-horizon CP-SAT model that solves one day at a time; intended for larger instances.
 
 All models return a `WeeklySchedule`; metrics and feasibility are computed centrally in `evaluator.py`.
 
@@ -123,11 +125,12 @@ Run the terminal menu:
 python main.py
 ```
 
-The menu lets you choose one model, multiple models, or all models. It also asks for the CP time limit per day, CP thread count, and whether to show the OR-Tools CP run log in the terminal.
+The menu lets you choose one model, multiple models, or all models. It also asks for CP-SAT time limits, worker count, candidate limits, and whether to show the OR-Tools CP-SAT search log in the terminal.
 
 Results are always written under `results/`. Each model run writes:
 
 - `results/schedules/{solver}/result.json`
+- `results/schedules/{solver}/result.txt`
 - `results/schedules/{solver}/daily_schedule.csv`
 - `results/schedules/{solver}/incomplete_orders.csv`
 - `results/schedules/{solver}/run_log_{solver}_{timestamp}.csv`
@@ -138,12 +141,14 @@ Results are always written under `results/`. Each model run writes:
 python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time_windows.csv --solver nearest
 python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time_windows.csv --solver deadline
 python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time_windows.csv --solver regret
-python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time_windows.csv --solver cp --cp-time-limit-per-day 10 --cp-threads 4 --cp-log-search
+python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time_windows.csv --solver cp_full_week --cp-max-customers 300 --cp-time-limit-sec 60
+python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time_windows.csv --solver cp_rolling --cp-max-candidates-per-day 80 --cp-time-limit-per-day-sec 10
 ```
 
 Add `--save-results` to write:
 
 - `results/schedules/{solver}/result.json`
+- `results/schedules/{solver}/result.txt`
 - `results/schedules/{solver}/daily_schedule.csv`
 - `results/schedules/{solver}/incomplete_orders.csv`
 
@@ -155,8 +160,9 @@ Run the main comparison:
 python -m vrp_weekly.benchmark \
   --locations data/locations.csv \
   --time-windows data/time_windows.csv \
-  --solvers nearest deadline regret cp \
-  --cp-time-limit-per-day 10
+  --solvers nearest deadline regret cp_rolling \
+  --cp-max-candidates-per-day 80 \
+  --cp-time-limit-per-day-sec 10
 ```
 
 Run the report export:
@@ -165,8 +171,9 @@ Run the report export:
 python -m vrp_weekly.benchmark \
   --locations data/locations.csv \
   --time-windows data/time_windows.csv \
-  --solvers nearest deadline regret cp \
-  --cp-time-limit-per-day 10 \
+  --solvers nearest deadline regret cp_rolling \
+  --cp-max-candidates-per-day 80 \
+  --cp-time-limit-per-day-sec 10 \
   --export-report
 ```
 
@@ -174,6 +181,7 @@ Outputs:
 
 - `results/comparison/benchmark_summary.csv`
 - `results/schedules/{solver}/result.json`
+- `results/schedules/{solver}/result.txt`
 - `results/schedules/{solver}/daily_schedule.csv`
 - `results/schedules/{solver}/incomplete_orders.csv`
 - `results/comparison/delivered_count_by_solver.png`

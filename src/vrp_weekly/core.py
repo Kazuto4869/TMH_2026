@@ -157,6 +157,7 @@ class WeeklySchedule:
     """A candidate seven-day delivery schedule."""
 
     routes: dict[int, DailyRoute] = field(default_factory=dict)
+    solver_status: dict[str, Any] = field(default_factory=dict)
 
     def delivered_customer_ids(self) -> set[str]:
         """Return the set of unique feasible customers served during the week."""
