@@ -307,6 +307,8 @@ def _build_rolling_run_log_rows(
                     "gap_percent": format_gap_percent(day_status.get("gap_percent", "")),
                     "objective": day_status.get("objective", ""),
                     "best_bound": day_status.get("best_bound", ""),
+                    "complete_count": day_status.get("complete_count", ""),
+                    "carried_over_count": day_status.get("carried_over_count", ""),
                     "cp_time_limit_sec": "",
                     "cp_time_limit_per_day_sec": cp_time_limit_per_day_sec,
                     "cp_max_customers": "",
@@ -342,6 +344,8 @@ def _build_rolling_run_log_rows(
     )
     summary_row["row_type"] = "SUMMARY"
     summary_row["day"] = "SUMMARY"
+    summary_row["complete_count"] = metrics.get("delivered_count", "")
+    summary_row["carried_over_count"] = metrics.get("incomplete_count", "")
     rows.append(summary_row)
     return rows
 

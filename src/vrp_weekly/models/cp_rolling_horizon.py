@@ -219,6 +219,9 @@ class RollingHorizonCPSATSolver:
             LOGGER.info("cp_rolling day=%s solve candidates=%s", day, len(candidates))
             route, day_status = self._solve_day(instance, day, candidates)
             day_status["runtime_sec"] = time.perf_counter() - day_start
+            delivered_today = len(route.delivered_customer_ids())
+            day_status["complete_count"] = delivered_today
+            day_status["carried_over_count"] = max(0, len(candidates) - delivered_today)
             routes[day] = route
             day_statuses[day] = day_status
             undelivered -= route.delivered_customer_ids()
