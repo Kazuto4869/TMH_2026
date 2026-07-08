@@ -1,0 +1,4 @@
+customer_id,customer_name,demand_kg,available_days
+C095,Khach_Hang_095,2.8,4 5
+C235,Khach_Hang_235,3.4,1 2 3 4 5
+C268,Khach_Hang_268,1.2,1 5

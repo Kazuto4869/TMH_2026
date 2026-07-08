@@ -1,15 +1,14 @@
-"""Nearest Neighbor baseline solver."""
+﻿"""Nearest Neighbor baseline solver."""
 
 from __future__ import annotations
 
 from vrp_weekly.config import MONDAY, SUNDAY
 from vrp_weekly.distance import euclidean_distance_km
 from vrp_weekly.evaluator import evaluate_daily_route
-from vrp_weekly.models import DailyRoute, Instance, WeeklySchedule
-from vrp_weekly.solvers.base import Solver
+from vrp_weekly.core import DailyRoute, Instance, WeeklySchedule
 
 
-class NearestNeighborSolver(Solver):
+class NearestNeighborSolver:
     """Greedy nearest-neighbor weekly routing baseline."""
 
     name = "nearest"
@@ -44,3 +43,4 @@ class NearestNeighborSolver(Solver):
             routes[day] = evaluate_daily_route(instance, day, sequence)
 
         return WeeklySchedule(routes=routes)
+

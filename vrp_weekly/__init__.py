@@ -8,7 +8,7 @@ _SRC_PACKAGE = Path(__file__).resolve().parents[1] / "src" / "vrp_weekly"
 if _SRC_PACKAGE.is_dir():
     __path__.append(str(_SRC_PACKAGE))
 
-from vrp_weekly.models import (  # noqa: E402
+from vrp_weekly.core import (  # noqa: E402
     DailyRoute,
     EvaluationMetrics,
     Instance,

@@ -1,4 +1,4 @@
-"""Benchmark runner for comparing weekly VRP solvers."""
+﻿"""Benchmark runner for comparing weekly VRP solvers."""
 
 from __future__ import annotations
 
@@ -19,10 +19,10 @@ from vrp_weekly.config import (
     WAITING_WEIGHT,
 )
 from vrp_weekly.evaluator import calculate_objective, evaluate_weekly_schedule
-from vrp_weekly.export import export_benchmark_plots, export_report_files, save_result_json
+from vrp_weekly.export import export_benchmark_plots, export_report_files, save_result_json, solver_results_dir
 from vrp_weekly.io import load_instance
-from vrp_weekly.models import Instance
-from vrp_weekly.solvers.factory import create_solver, solver_names
+from vrp_weekly.core import Instance
+from vrp_weekly.model_factory import create_solver, solver_names
 
 
 class BenchmarkTable:
@@ -82,8 +82,8 @@ def run_benchmark(
     """Run selected solvers and return a metrics table."""
     rows: list[dict[str, Any]] = []
     output_dir = Path(results_dir)
-    schedules_dir = output_dir / "schedules"
-    schedules_dir.mkdir(parents=True, exist_ok=True)
+    comparison_dir = output_dir / "comparison"
+    comparison_dir.mkdir(parents=True, exist_ok=True)
 
     for solver_name in solver_names_to_run:
         solver = create_solver(solver_name, **solver_kwargs)
@@ -91,7 +91,7 @@ def run_benchmark(
         schedule = solver.solve(instance)
         runtime_sec = time.perf_counter() - start_time
         metrics = evaluate_weekly_schedule(instance, schedule)
-        save_result_json(schedules_dir / f"{solver.name}.json", solver.name, schedule, metrics)
+        save_result_json(solver_results_dir(output_dir, solver.name) / "result.json", solver.name, schedule, metrics)
         if export_report:
             export_report_files(output_dir, solver.name, instance, schedule)
 
@@ -116,11 +116,10 @@ def run_benchmark(
 
     rows.sort(key=lambda row: tuple(row[column] for column in SORT_BY))
     frame = BenchmarkTable(rows)
-    summary_path = output_dir / "benchmark_summary.csv"
-    output_dir.mkdir(parents=True, exist_ok=True)
+    summary_path = comparison_dir / "benchmark_summary.csv"
     frame.to_csv(summary_path)
     if export_report:
-        export_benchmark_plots(summary_path, output_dir)
+        export_benchmark_plots(summary_path, comparison_dir)
     return frame
 
 
@@ -161,7 +160,7 @@ def main(argv: list[str] | None = None) -> int:
         seed=args.seed,
     )
     print(frame.to_string(index=False))
-    print(f"benchmark_summary={Path(args.results_dir) / 'benchmark_summary.csv'}")
+    print(f"benchmark_summary={Path(args.results_dir) / 'comparison' / 'benchmark_summary.csv'}")
     return 0
 
 
@@ -174,3 +173,4 @@ def _format_cell(value: Any) -> str:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

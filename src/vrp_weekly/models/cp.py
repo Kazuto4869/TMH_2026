@@ -1,4 +1,4 @@
-"""Rolling-horizon daily CP solver using OR-Tools when available."""
+﻿"""Rolling-horizon daily CP solver using OR-Tools when available."""
 
 from __future__ import annotations
 
@@ -6,14 +6,13 @@ import logging
 
 from vrp_weekly.config import CP_TIME_LIMIT_PER_DAY_SEC, DEFAULT_SERVICE_TIME_MIN, DROP_PENALTY_BY_DAY, MONDAY, SUNDAY
 from vrp_weekly.evaluator import evaluate_daily_route
-from vrp_weekly.models import DailyRoute, Instance, WeeklySchedule
-from vrp_weekly.solvers.base import Solver
-from vrp_weekly.solvers.earliest_deadline import EarliestDeadlineSolver
+from vrp_weekly.core import DailyRoute, Instance, WeeklySchedule
+from vrp_weekly.models.deadline import EarliestDeadlineSolver
 
 LOGGER = logging.getLogger(__name__)
 
 
-class CpDailySolver(Solver):
+class CpDailySolver:
     """Daily CP/OR-Tools solver with a deterministic fallback when OR-Tools is unavailable."""
 
     name = "cp"
@@ -23,11 +22,15 @@ class CpDailySolver(Solver):
         time_limit_per_day: int = CP_TIME_LIMIT_PER_DAY_SEC,
         drop_penalty_by_day: dict[int, int] | None = None,
         seed: int | None = None,
+        threads: int = 1,
+        log_search: bool = False,
     ) -> None:
         """Initialize CP solver parameters."""
         self.time_limit_per_day = time_limit_per_day
         self.drop_penalty_by_day = dict(DROP_PENALTY_BY_DAY if drop_penalty_by_day is None else drop_penalty_by_day)
         self.seed = seed
+        self.threads = max(1, threads)
+        self.log_search = log_search
 
     def solve(self, instance: Instance) -> WeeklySchedule:
         """Solve with OR-Tools if installed, otherwise use the deadline baseline."""
@@ -96,6 +99,11 @@ class CpDailySolver(Solver):
             search_parameters.first_solution_strategy = routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC
             search_parameters.local_search_metaheuristic = routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH
             search_parameters.time_limit.seconds = self.time_limit_per_day
+            search_parameters.log_search = self.log_search
+            if hasattr(search_parameters, "number_of_workers"):
+                search_parameters.number_of_workers = self.threads
+            if hasattr(search_parameters, "sat_parameters"):
+                search_parameters.sat_parameters.num_search_workers = self.threads
             solution = routing.SolveWithParameters(search_parameters)
             sequence: list[str] = []
 
@@ -112,3 +120,4 @@ class CpDailySolver(Solver):
             undelivered -= route.delivered_customer_ids()
 
         return WeeklySchedule(routes=routes)
+

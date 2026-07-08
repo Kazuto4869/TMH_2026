@@ -1,4 +1,4 @@
-"""Solver factory used by CLI and benchmark entry points."""
+"""Factory for available routing models."""
 
 from __future__ import annotations
 
@@ -12,15 +12,14 @@ from vrp_weekly.config import (
     URGENCY_WEIGHT,
     WAITING_WEIGHT,
 )
-from vrp_weekly.solvers.base import Solver
-from vrp_weekly.solvers.cp_daily import CpDailySolver
-from vrp_weekly.solvers.earliest_deadline import EarliestDeadlineSolver
-from vrp_weekly.solvers.nearest_neighbor import NearestNeighborSolver
-from vrp_weekly.solvers.regret_insertion import RegretInsertionSolver
+from vrp_weekly.models.cp import CpDailySolver
+from vrp_weekly.models.deadline import EarliestDeadlineSolver
+from vrp_weekly.models.nearest import NearestNeighborSolver
+from vrp_weekly.models.regret import RegretInsertionSolver
 
 
-def create_solver(solver_key: str, **kwargs: Any) -> Solver:
-    """Create a solver instance from a CLI or benchmark solver key."""
+def create_solver(solver_key: str, **kwargs: Any) -> object:
+    """Create a model instance from a CLI or benchmark key."""
     normalized = "deadline" if solver_key == "earliest" else solver_key
     if normalized == "nearest":
         return NearestNeighborSolver()
@@ -39,10 +38,12 @@ def create_solver(solver_key: str, **kwargs: Any) -> Solver:
             time_limit_per_day=int(kwargs.get("cp_time_limit_per_day", CP_TIME_LIMIT_PER_DAY_SEC)),
             drop_penalty_by_day=kwargs.get("drop_penalty_by_day", DROP_PENALTY_BY_DAY),
             seed=kwargs.get("seed"),
+            threads=int(kwargs.get("cp_threads", 1)),
+            log_search=bool(kwargs.get("cp_log_search", False)),
         )
     raise ValueError(f"Unknown solver: {solver_key}")
 
 
 def solver_names() -> list[str]:
-    """Return supported solver names."""
+    """Return supported model names."""
     return ["nearest", "deadline", "regret", "cp"]

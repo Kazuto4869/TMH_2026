@@ -1,11 +1,11 @@
-"""Distance and travel-time helpers."""
+﻿"""Distance and travel-time helpers."""
 
 from __future__ import annotations
 
 import math
 
 from vrp_weekly.config import MAX_SPEED_KMPH, MINUTES_PER_HOUR
-from vrp_weekly.models import Location
+from vrp_weekly.core import Location
 
 
 def euclidean_distance_km(origin: Location, destination: Location) -> float:
@@ -23,3 +23,4 @@ def travel_time_minutes(distance_km: float, speed_kmph: float = MAX_SPEED_KMPH) 
 def travel_time_between_minutes(origin: Location, destination: Location) -> int:
     """Return ceiling travel time in minutes between two locations."""
     return travel_time_minutes(euclidean_distance_km(origin, destination))
+

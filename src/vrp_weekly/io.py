@@ -1,4 +1,4 @@
-"""Input parsers and data summaries for contest CSV files."""
+﻿"""Input parsers and data summaries for contest CSV files."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from statistics import mean
 from typing import Any
 
 from vrp_weekly.config import DEPOT_ID, MONDAY, SUNDAY
-from vrp_weekly.models import Instance, Location, TimeWindow
+from vrp_weekly.core import Instance, Location, TimeWindow
 from vrp_weekly.time_utils import parse_hhmm
 
 LOGGER = logging.getLogger(__name__)
@@ -255,3 +255,4 @@ def _optional_int(row: dict[str, str], column: str | None, default: int) -> int:
     if column is None or row.get(column, "") == "":
         return default
     return int(float(row[column]))
+

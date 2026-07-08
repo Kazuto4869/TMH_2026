@@ -1,15 +1,14 @@
-"""Earliest time-window-end baseline solver."""
+﻿"""Earliest time-window-end baseline solver."""
 
 from __future__ import annotations
 
 from vrp_weekly.config import MONDAY, SUNDAY
 from vrp_weekly.distance import travel_time_between_minutes
 from vrp_weekly.evaluator import evaluate_daily_route
-from vrp_weekly.models import DailyRoute, Instance, WeeklySchedule
-from vrp_weekly.solvers.base import Solver
+from vrp_weekly.core import DailyRoute, Instance, WeeklySchedule
 
 
-class EarliestDeadlineSolver(Solver):
+class EarliestDeadlineSolver:
     """Greedy baseline that chooses the feasible next customer with earliest window end."""
 
     name = "deadline"
@@ -48,3 +47,4 @@ class EarliestDeadlineSolver(Solver):
             routes[day] = evaluate_daily_route(instance, day, sequence)
 
         return WeeklySchedule(routes=routes)
+

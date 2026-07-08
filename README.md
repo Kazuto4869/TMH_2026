@@ -31,19 +31,44 @@ The canonical defaults are in `src/vrp_weekly/config.py`. A report-friendly copy
 ```text
 data/                       Input CSV files
 src/vrp_weekly/             Package source
-src/vrp_weekly/solvers/     Baseline, heuristic, and CP solvers
+src/vrp_weekly/models/      Baseline, heuristic, and CP routing models
 tests/                      Unit tests
 results/                    Generated benchmark and report outputs
 ```
 
-## Solvers
+## Source Files
+
+Core package files:
+
+- `src/vrp_weekly/core.py`: typed data structures used across the project, including `Location`, `TimeWindow`, `Instance`, `Stop`, `DailyRoute`, `WeeklySchedule`, and `EvaluationMetrics`.
+- `src/vrp_weekly/config.py`: default constants for planning horizon, travel speed, objective weights, heuristic parameters, CP parameters, and observed data summary.
+- `src/vrp_weekly/io.py`: reads `locations.csv` and `time_windows.csv`, validates input, detects the depot, groups time windows, and builds an `Instance`.
+- `src/vrp_weekly/distance.py`: computes Euclidean distance and travel time in minutes.
+- `src/vrp_weekly/time_utils.py`: parses and formats `HH:MM` time strings.
+- `src/vrp_weekly/evaluator.py`: simulates daily routes, selects feasible time windows, validates weekly schedules, calculates metrics, and prints schedules/metrics.
+- `src/vrp_weekly/export.py`: writes result JSON, daily schedule CSV, incomplete order CSV, benchmark CSV, and comparison plots.
+- `src/vrp_weekly/model_factory.py`: maps model names such as `nearest`, `deadline`, `regret`, and `cp` to model classes.
+- `src/vrp_weekly/cli.py`: command-line entry point for inspecting data or running one model.
+- `src/vrp_weekly/benchmark.py`: runs multiple models and writes comparison outputs under `results/comparison/`.
+- `src/vrp_weekly/compare_results.py`: compares already-saved result files under `results/schedules/{solver}/result.json` without rerunning models.
+- `src/vrp_weekly/__init__.py`: public package exports for the core data structures.
+
+Model files:
+
+- `src/vrp_weekly/models/nearest.py`: nearest-neighbor greedy baseline.
+- `src/vrp_weekly/models/deadline.py`: earliest-deadline greedy baseline.
+- `src/vrp_weekly/models/regret.py`: rolling-horizon regret insertion model with local search.
+- `src/vrp_weekly/models/cp.py`: daily OR-Tools CP routing model with deadline fallback if OR-Tools is unavailable.
+- `src/vrp_weekly/models/__init__.py`: public imports for the four model classes.
+
+## Models
 
 - `nearest`: greedy nearest feasible next customer baseline.
 - `deadline`: greedy earliest feasible time-window end baseline, with travel-time tie break.
 - `regret`: rolling-horizon regret-2 insertion with urgency scoring and bounded local search.
 - `cp`: rolling-horizon daily OR-Tools routing model. Each day is solved as a single-vehicle optional-customer model, then evaluated by the same weekly evaluator as the heuristics.
 
-All solvers return a `WeeklySchedule`; metrics and feasibility are computed centrally in `evaluator.py`.
+All models return a `WeeklySchedule`; metrics and feasibility are computed centrally in `evaluator.py`.
 
 ## Metrics
 
@@ -73,7 +98,7 @@ From this directory:
 python -m pip install -e ".[dev,benchmark]"
 ```
 
-For the OR-Tools CP solver:
+For the OR-Tools CP model:
 
 ```bash
 python -m pip install ortools
@@ -90,20 +115,37 @@ python -m vrp_weekly.cli \
   --summary
 ```
 
-## Run One Solver
+## Interactive Run
+
+Run the terminal menu:
+
+```bash
+python main.py
+```
+
+The menu lets you choose one model, multiple models, or all models. It also asks for the CP time limit per day, CP thread count, and whether to show the OR-Tools CP run log in the terminal.
+
+Results are always written under `results/`. Each model run writes:
+
+- `results/schedules/{solver}/result.json`
+- `results/schedules/{solver}/daily_schedule.csv`
+- `results/schedules/{solver}/incomplete_orders.csv`
+- `results/schedules/{solver}/run_log_{solver}_{timestamp}.csv`
+
+## Run One Model
 
 ```bash
 python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time_windows.csv --solver nearest
 python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time_windows.csv --solver deadline
 python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time_windows.csv --solver regret
-python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time_windows.csv --solver cp --cp-time-limit-per-day 10
+python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time_windows.csv --solver cp --cp-time-limit-per-day 10 --cp-threads 4 --cp-log-search
 ```
 
 Add `--save-results` to write:
 
-- `results/{solver}_result.json`
-- `results/schedules/{solver}_daily_schedule.csv`
-- `results/schedules/{solver}_incomplete_orders.csv`
+- `results/schedules/{solver}/result.json`
+- `results/schedules/{solver}/daily_schedule.csv`
+- `results/schedules/{solver}/incomplete_orders.csv`
 
 ## Benchmark
 
@@ -130,14 +172,24 @@ python -m vrp_weekly.benchmark \
 
 Outputs:
 
-- `results/benchmark_summary.csv`
-- `results/schedules/{solver}.json`
-- `results/schedules/{solver}_daily_schedule.csv`
-- `results/schedules/{solver}_incomplete_orders.csv`
-- `results/delivered_count_by_solver.png`
-- `results/incomplete_count_by_solver.png`
-- `results/total_distance_km_by_solver.png`
-- `results/total_waiting_time_min_by_solver.png`
+- `results/comparison/benchmark_summary.csv`
+- `results/schedules/{solver}/result.json`
+- `results/schedules/{solver}/daily_schedule.csv`
+- `results/schedules/{solver}/incomplete_orders.csv`
+- `results/comparison/delivered_count_by_solver.png`
+- `results/comparison/incomplete_count_by_solver.png`
+- `results/comparison/total_distance_km_by_solver.png`
+- `results/comparison/total_waiting_time_min_by_solver.png`
+
+## Compare Saved Results
+
+If model results already exist under `results/schedules/{solver}/result.json`, compare them without rerunning models:
+
+```bash
+python -m vrp_weekly.compare_results --results-dir results
+```
+
+Add `--export-plots` to regenerate the comparison PNG files.
 
 ## Tests
 

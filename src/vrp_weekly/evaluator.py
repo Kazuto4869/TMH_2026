@@ -1,4 +1,4 @@
-"""Schedule simulation, validation, and pretty-printing utilities."""
+﻿"""Schedule simulation, validation, and pretty-printing utilities."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ from vrp_weekly.config import (
     WEIGHT_WAITING_MIN,
 )
 from vrp_weekly.distance import euclidean_distance_km, travel_time_between_minutes
-from vrp_weekly.models import DailyRoute, EvaluationMetrics, Instance, Stop, TimeWindow, WeeklySchedule
+from vrp_weekly.core import DailyRoute, EvaluationMetrics, Instance, Stop, TimeWindow, WeeklySchedule
 from vrp_weekly.time_utils import format_hhmm
 
 
@@ -325,3 +325,4 @@ def format_hhmm_safe(minutes: int) -> str:
     if 0 <= minutes <= DAY_END_MIN:
         return format_hhmm(minutes)
     return f"{minutes}min"
+

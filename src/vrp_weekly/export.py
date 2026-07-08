@@ -1,4 +1,4 @@
-"""JSON, CSV, and plot exports for schedules and benchmark results."""
+﻿"""JSON, CSV, and plot exports for schedules and benchmark results."""
 
 from __future__ import annotations
 
@@ -8,8 +8,13 @@ import os
 from pathlib import Path
 from typing import Any
 
-from vrp_weekly.models import EvaluationMetrics, Instance, WeeklySchedule
+from vrp_weekly.core import EvaluationMetrics, Instance, WeeklySchedule
 from vrp_weekly.time_utils import format_hhmm
+
+
+def solver_results_dir(results_dir: str | Path, solver_name: str) -> Path:
+    """Return the canonical output directory for one solver."""
+    return Path(results_dir) / "schedules" / solver_name
 
 
 def schedule_to_dict(schedule: WeeklySchedule) -> dict[str, Any]:
@@ -60,6 +65,16 @@ def save_result_json(path: str | Path, solver_name: str, schedule: WeeklySchedul
         "schedule": schedule_to_dict(schedule),
     }
     output_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+
+def save_run_log_csv(path: str | Path, row: dict[str, Any]) -> None:
+    """Save one model run summary as a CSV file."""
+    output_path = Path(path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with output_path.open("w", newline="", encoding="utf-8") as file_obj:
+        writer = csv.DictWriter(file_obj, fieldnames=list(row))
+        writer.writeheader()
+        writer.writerow(row)
 
 
 def export_daily_schedule_csv(
@@ -146,9 +161,9 @@ def export_report_files(
     schedule: WeeklySchedule,
 ) -> None:
     """Export report-ready CSV files for one solver schedule."""
-    schedules_dir = Path(results_dir) / "schedules"
-    export_daily_schedule_csv(schedules_dir / f"{solver_name}_daily_schedule.csv", instance, schedule)
-    export_incomplete_orders_csv(schedules_dir / f"{solver_name}_incomplete_orders.csv", instance, schedule)
+    schedules_dir = solver_results_dir(results_dir, solver_name)
+    export_daily_schedule_csv(schedules_dir / "daily_schedule.csv", instance, schedule)
+    export_incomplete_orders_csv(schedules_dir / "incomplete_orders.csv", instance, schedule)
 
 
 def export_benchmark_plots(summary_csv: str | Path, output_dir: str | Path) -> None:
@@ -183,3 +198,4 @@ def _format_or_blank(minutes: int | None) -> str:
     if minutes is None:
         return ""
     return format_hhmm(minutes) if 0 <= minutes <= 1440 else str(minutes)
+

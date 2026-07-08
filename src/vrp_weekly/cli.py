@@ -15,9 +15,9 @@ from vrp_weekly.config import (
     WAITING_WEIGHT,
 )
 from vrp_weekly.evaluator import evaluate_weekly_schedule, print_metrics, print_schedule
-from vrp_weekly.export import export_report_files, save_result_json
+from vrp_weekly.export import export_report_files, save_result_json, solver_results_dir
 from vrp_weekly.io import load_instance, summarize_instance
-from vrp_weekly.solvers.factory import create_solver, solver_names
+from vrp_weekly.model_factory import create_solver, solver_names
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -35,6 +35,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--insertion-weight", type=float, default=INSERTION_WEIGHT, help="Regret solver insertion weight.")
     parser.add_argument("--waiting-weight", type=float, default=WAITING_WEIGHT, help="Regret solver waiting penalty weight.")
     parser.add_argument("--cp-time-limit-per-day", type=int, default=CP_TIME_LIMIT_PER_DAY_SEC, help="CP solver time limit per day in seconds.")
+    parser.add_argument("--cp-threads", type=int, default=1, help="CP solver worker thread count when supported by OR-Tools.")
+    parser.add_argument("--cp-log-search", action="store_true", help="Print OR-Tools CP search log to the terminal.")
     parser.add_argument("--log-level", default="WARNING", help="Python logging level.")
     return parser
 
@@ -59,6 +61,8 @@ def main(argv: list[str] | None = None) -> int:
         urgency_weight=args.urgency_weight,
         waiting_weight=args.waiting_weight,
         cp_time_limit_per_day=args.cp_time_limit_per_day,
+        cp_threads=args.cp_threads,
+        cp_log_search=args.cp_log_search,
         seed=args.seed,
     )
     schedule = solver.solve(instance)
@@ -70,7 +74,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.save_results:
         results_dir = Path(args.results_dir)
-        save_result_json(results_dir / f"{solver.name}_result.json", solver.name, schedule, metrics)
+        save_result_json(solver_results_dir(results_dir, solver.name) / "result.json", solver.name, schedule, metrics)
         export_report_files(results_dir, solver.name, instance, schedule)
         print(f"saved_results={results_dir}")
 

@@ -1,6 +1,6 @@
-"""Weekly vehicle routing experimental framework."""
+﻿"""Weekly vehicle routing experimental framework."""
 
-from vrp_weekly.models import (
+from vrp_weekly.core import (
     DailyRoute,
     EvaluationMetrics,
     Instance,
@@ -19,3 +19,4 @@ __all__ = [
     "TimeWindow",
     "WeeklySchedule",
 ]
+

@@ -1,4 +1,4 @@
-"""Rolling-horizon regret insertion solver with simple local search."""
+﻿"""Rolling-horizon regret insertion solver with simple local search."""
 
 from __future__ import annotations
 
@@ -16,8 +16,7 @@ from vrp_weekly.config import (
     WAITING_WEIGHT,
 )
 from vrp_weekly.evaluator import evaluate_daily_route
-from vrp_weekly.models import DailyRoute, Instance, WeeklySchedule
-from vrp_weekly.solvers.base import Solver
+from vrp_weekly.core import DailyRoute, Instance, WeeklySchedule
 
 
 @dataclass(frozen=True)
@@ -36,7 +35,7 @@ class InsertionCandidate:
         return self.second_best_cost - self.best_cost
 
 
-class RegretInsertionSolver(Solver):
+class RegretInsertionSolver:
     """Rolling-horizon regret insertion plus local improvement."""
 
     name = "regret"
@@ -257,3 +256,4 @@ def _neighbor_sequences(sequence: list[str]) -> Iterable[list[str]]:
         for j in range(i + 2, n + 1):
             candidate = sequence[:i] + list(reversed(sequence[i:j])) + sequence[j:]
             yield candidate
+
