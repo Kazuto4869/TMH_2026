@@ -105,7 +105,7 @@ def create_solver(solver_key: str, **kwargs: Any) -> object:
             phase2_time_limit_sec=kwargs.get("cp_phase2_time_limit_sec"),
             random_seed=int(kwargs.get("cp_random_seed", kwargs.get("seed", 1))),
             use_decision_strategy=bool(kwargs.get("cp_use_decision_strategy", True)),
-            use_service_no_overlap=bool(kwargs.get("cp_use_service_no_overlap", True)),
+            use_service_no_overlap=bool(kwargs.get("cp_use_service_no_overlap", False)),
             candidate_strategy=str(kwargs.get("cp_candidate_strategy", "hybrid")),
             solve_phase2=bool(kwargs.get("cp_solve_phase2", True)),
         )

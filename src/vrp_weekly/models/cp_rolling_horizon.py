@@ -408,7 +408,7 @@ class RollingHorizonCPSATSolver:
         phase2_time_limit_sec: int | None = None,
         random_seed: int = 1,
         use_decision_strategy: bool = True,
-        use_service_no_overlap: bool = True,
+        use_service_no_overlap: bool = False,
         candidate_strategy: str = "hybrid",
         solve_phase2: bool = True,
     ) -> None:

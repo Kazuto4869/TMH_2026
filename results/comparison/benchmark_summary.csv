@@ -1,5 +1,2 @@
 solver,delivered_count,incomplete_count,active_days,total_deferral_days,total_distance_km,total_travel_time_min,total_waiting_time_min,total_service_time_min,total_route_duration_min,objective_value,runtime_sec,max_day_gap_percent,total_fixed_impossible_arcs,average_fixed_arc_ratio,total_route_interval_count,route_no_overlap_days,total_remaining_after_week,hard_feasible
-min_deferral,300,0,7,564,1743.4564803101212,2236,857,2226,5319,5658991.564803101,273.96246299998893,,,,,,,True
-deadline,286,14,7,537,1994.1873080436337,2522,387,2110,5019,19391028.873080436,5.106748799997149,,,,,,,True
-nearest,201,99,7,612,750.6468645117739,996,2320,1495,4811,105130526.46864511,1.1598305000079563,,,,,,,True
-cp_rolling,184,116,7,342,2223.0292465726084,2760,791,1379,4930,119443721.29246573,439.9616151000082,220.0,6841,0.15081569664903,568,7,116,True
+cp_rolling,285,15,7,697,2357.4816499552885,2977,419,2111,5507,21994693.816499554,364.7537250000023,154.83870967741936,6681,0.1472883597883598,498,7,15,True

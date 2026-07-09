@@ -247,7 +247,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--cp-random-seed", type=int, default=1, help="CP-SAT random seed.")
     parser.add_argument("--cp-use-decision-strategy", dest="cp_use_decision_strategy", action="store_true", default=True, help="Add an optional y-first CP decision strategy.")
     parser.add_argument("--cp-no-decision-strategy", dest="cp_use_decision_strategy", action="store_false", help="Disable the optional CP decision strategy.")
-    parser.add_argument("--cp-use-service-no-overlap", dest="cp_use_service_no_overlap", action="store_true", default=True, help="Add optional service intervals and NoOverlap.")
+    parser.add_argument("--cp-use-service-no-overlap", dest="cp_use_service_no_overlap", action="store_true", default=False, help="Add optional service intervals and NoOverlap.")
     parser.add_argument("--cp-no-service-no-overlap", dest="cp_use_service_no_overlap", action="store_false", help="Disable service NoOverlap intervals.")
     parser.add_argument("--cp-candidate-strategy", choices=["urgent", "hybrid"], default="hybrid", help="Daily candidate filtering strategy for rolling CP.")
     parser.add_argument("--cp-phase1-only", dest="cp_solve_phase2", action="store_false", default=True, help="Run only phase 1 delivered-count CP for diagnostics.")

@@ -1,0 +1,6 @@
+profile,max_candidates_per_day,time_limit_per_day_sec,workers,use_two_phase_objective,random_seed,use_decision_strategy,use_service_no_overlap,candidate_strategy,phase1_only,delivered_count,incomplete_count,total_deferral_days,total_distance_km,total_waiting_time_min,total_route_duration_min,runtime_sec,phase1_optimal_days,phase2_optimal_days,feasible_days,unknown_or_infeasible_days,hard_feasible,status,max_day_gap_percent
+base,80,60,4,True,1,True,True,hybrid,False,227,73,554,2392.008264965217,574,5258,439.0923127999995,0,0,7,0,True,FEASIBLE,150.0
+decision_strategy_false,80,60,4,True,1,False,True,hybrid,False,226,74,521,2212.1829845564757,290,4727,437.12002589998883,0,0,7,0,True,FEASIBLE,150.0
+service_no_overlap_false,80,60,4,True,1,True,False,hybrid,False,285,15,705,2382.2161688442243,312,5428,365.88911180000287,2,0,7,0,True,FEASIBLE,125.71428571428571
+candidate_strategy_urgent,80,60,4,True,1,True,True,urgent,False,237,63,539,1791.3752829943626,896,4901,427.25252300000284,0,0,7,0,True,FEASIBLE,154.83870967741936
+service_no_overlap_false__candidate_strategy_urgent,80,60,4,True,1,True,False,urgent,False,267,33,636,2258.1322184322885,516,5342,426.3352128999977,0,0,7,0,True,FEASIBLE,113.51351351351352

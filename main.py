@@ -62,7 +62,7 @@ def main() -> int:
     cp_two_phase_objective = True
     cp_random_seed = 1
     cp_use_decision_strategy = True
-    cp_use_service_no_overlap = True
+    cp_use_service_no_overlap = False
     cp_candidate_strategy = "hybrid"
     cp_solve_phase2 = True
     heuristic_max_candidates_per_day: int | None = None
@@ -83,15 +83,8 @@ def main() -> int:
     if has_cp_rolling:
         cp_time_limit_per_day_sec = _prompt_int("Rolling CP time limit per day in seconds", 10, minimum=1)
         cp_max_candidates_per_day = _prompt_optional_int("Rolling CP max candidates per day", default=80, minimum=1)
-        cp_two_phase_objective = _prompt_yes_no("Use pure two-phase rolling CP objective", default=True)
-        cp_random_seed = _prompt_int("CP random seed", 1, minimum=0)
-        cp_use_decision_strategy = _prompt_yes_no("Use optional y-first CP decision strategy", default=True)
-        cp_use_service_no_overlap = _prompt_yes_no("Use service NoOverlap intervals", default=True)
-        cp_candidate_strategy = _prompt_choice("Rolling CP candidate strategy", ["hybrid", "urgent"], default="hybrid")
-        cp_solve_phase2 = not _prompt_yes_no("Run phase 1 only", default=False)
     if has_cp_model:
         cp_threads = _prompt_int("CP workers", 8, minimum=1)
-        cp_log_search = _prompt_yes_no("Show CP-SAT run log in terminal", default=False)
     if any(model_name in {"inferior_insertion", "inferior_insertion_ls", "regret_dispatch", "regret_dispatch_ls"} for model_name in selected_models):
         heuristic_max_candidates_per_day = _prompt_optional_int("Heuristic max candidates per day", default=0, minimum=1)
         if heuristic_max_candidates_per_day == 0:
