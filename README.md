@@ -86,6 +86,8 @@ Các kết quả benchmark được sắp xếp theo `incomplete_count`, `total_
 ├── params/                  # Bản ghi tham số mặc định phục vụ báo cáo
 ├── results/                 # Kết quả chạy solver và benchmark
 ├── src/vrp_weekly/          # Source package chính
+├── src/vrp_weekly/models/   # Tất cả solver/model đang được đăng ký
+├── src/vrp_weekly/heuristics/ # Helper dùng chung cho heuristic và local search
 ├── tests/                   # Unit tests
 ├── main.py                  # Menu chạy tương tác
 ├── pyproject.toml           # Metadata package và dependencies
@@ -102,6 +104,15 @@ Các kết quả benchmark được sắp xếp theo `incomplete_count`, `total_
 - `src/vrp_weekly/evaluator.py`: mô phỏng tuyến ngày, chọn time window khả thi, validate lịch tuần và tính metrics.
 - `src/vrp_weekly/export.py`: ghi `result.json`, `result.txt`, `daily_schedule.csv`, `incomplete_orders.csv`, run log và biểu đồ benchmark.
 - `src/vrp_weekly/model_factory.py`: ánh xạ tên solver sang class tương ứng.
+- `src/vrp_weekly/models/nearest.py`: baseline nearest feasible customer.
+- `src/vrp_weekly/models/deadline.py`: baseline earliest feasible time-window end.
+- `src/vrp_weekly/models/min_deferral.py`: baseline giảm deferral bằng feasible insertion, local search phụ và post-fill.
+- `src/vrp_weekly/models/inferior_insertion.py`: runnable inferior-first insertion heuristic.
+- `src/vrp_weekly/models/regret_dispatch_insertion.py`: runnable dispatch/defer regret insertion heuristic.
+- `src/vrp_weekly/models/hybrid_genetic_vns.py`: runnable population-based hybrid genetic heuristic with VNS/local-search repair.
+- `src/vrp_weekly/heuristics/route_eval.py`: helper đánh giá route, insertion và secondary route cost; không chứa solver class.
+- `src/vrp_weekly/heuristics/scoring.py`: helper chấm điểm deadline, remaining days, window width và isolation; không chứa solver class.
+- `src/vrp_weekly/heuristics/local_search.py`: helper local search dùng chung, gồm relocate, swap, two_opt, remove_reinsert và post_fill; không phải solver độc lập.
 - `src/vrp_weekly/cli.py`: CLI để inspect dữ liệu hoặc chạy một solver.
 - `src/vrp_weekly/benchmark.py`: chạy nhiều solver và tạo bảng so sánh.
 - `src/vrp_weekly/compare_results.py`: so sánh các kết quả đã lưu mà không chạy lại solver.
@@ -115,11 +126,38 @@ Codebase hiện đăng ký các solver sau:
 | --- | --- |
 | `nearest` | Greedy baseline, chọn khách hàng khả thi gần nhất tiếp theo. |
 | `deadline` | Greedy baseline, ưu tiên khách hàng có deadline/time-window-end sớm nhất. |
-| `regret` | Rolling-horizon regret insertion, có local search relocate, swap và 2-opt. |
+| `min_deferral` | Baseline ưu tiên giảm deferral: chèn khách hàng cùng ngày theo độ khẩn cấp trước, rồi mới xét chi phí tuyến. |
+| `inferior_insertion` | Inferior-first insertion heuristic, ưu tiên khách khó phục vụ: last available day, ít ngày còn lại, window hẹp, deadline sớm và spatial isolation. |
+| `inferior_insertion_ls` | `inferior_insertion` cộng local search/post-fill nội ngày. |
+| `regret_dispatch` | Dispatch/defer regret insertion heuristic, ưu tiên khách có defer risk và insertion regret cao. |
+| `regret_dispatch_ls` | `regret_dispatch` cộng local search/post-fill nội ngày. |
+| `hybrid_genetic_vns` | Population-based hybrid genetic heuristic với insertion repair và VNS/local-search improvement. |
 | `cp_full_week` | Mô hình CP-SAT toàn tuần, dùng biến giao/ngày/window/cung và `AddCircuit`; phù hợp để minh họa mô hình hoặc chạy quy mô nhỏ. |
 | `cp_rolling` | CP-SAT rolling horizon theo từng ngày; thực tế hơn cho dữ liệu lớn, có giới hạn candidate mỗi ngày. |
 
 Tất cả solver trả về `WeeklySchedule`. Việc validate feasibility và tính metrics được làm tập trung trong `evaluator.py`, giúp so sánh solver nhất quán.
+
+Ghi chú CP:
+
+- `cp_full_week` chỉ là mô hình minh họa/toán học cho instance nhỏ; mặc định chỉ lấy tối đa 40 khách hàng.
+- `cp_rolling` là CP-SAT rolling horizon độc lập, giải từng ngày với `AddCircuit` trên tập candidate được chọn. Solver này không dùng fallback, replacement route hoặc hint từ `min_deferral`.
+- Objective khoảng cách trong CP dùng scale theo kilomet: `round(distance_weight * distance_km)`, không dùng meter-scale `distance_km * 1000`.
+- Route return time trong output CP được tính lại từ sequence thực tế, không lấy trực tiếp biến `R` nội bộ của CP-SAT.
+- `cp_rolling` dùng multiple time-window selection, impossible arc fixing, candidate filtering, two-phase objective mặc định, service `NoOverlap`, round-trip lower bounds, và các ràng buộc tightening như degree linking, arc linking, window-pair cuts, pair conflict cuts, depot-window cuts, dominated-window cuts và precedence cuts.
+- `cp_rolling` dùng thêm optional route intervals theo cấu trúc service + travel-to-successor cho từng khách hàng được chọn, một depot interval cho travel từ kho đến khách đầu tiên, và `NoOverlap` trên các route intervals này. Đây là ràng buộc strengthen CP-SAT, không thay thế `AddCircuit`.
+- Diagnostics của `cp_rolling` có `route_interval_count`, `depot_interval_enabled`, `no_overlap_route_intervals_enabled`, `total_route_interval_count`, và `route_no_overlap_days`; `benchmark_summary.csv` cũng xuất các tổng hợp route-interval/no-overlap.
+- Candidate filtering của `cp_rolling` mặc định dùng chiến lược `hybrid`, trộn nhóm urgent/easy/deadline/isolated; có thể đổi về `urgent` bằng `--cp-candidate-strategy urgent`.
+- Nếu daily CP không tìm được nghiệm khả thi, hệ thống báo đúng CP status và trả route rỗng cho ngày đó; không vá bằng heuristic.
+- `cp_rolling` không claim tối ưu toàn tuần. `global_optimality_claim = False`; nếu tất cả subproblem ngày tối ưu thì status là `ALL_DAYS_OPTIMAL`, còn nghiệm rolling thực tế thường là `FEASIBLE`.
+- Column generation, capacity, multi-vehicle, batch splitting không được triển khai trong codebase hiện tại.
+
+Ghi chú heuristic:
+
+- Tất cả runnable solver/model class nằm trong `src/vrp_weekly/models/` và được đăng ký qua `model_factory.py`.
+- Helper dùng chung nằm trong `src/vrp_weekly/heuristics/`; các file helper không chứa runnable solver class.
+- Local search trong `heuristics/local_search.py` là bước cải thiện route/schedule, không phải standalone constructor hay solver được đăng ký.
+- Các heuristic không chứng minh tối ưu; so sánh cuối cùng vẫn dựa trên evaluator metrics và benchmark output.
+- Bài toán vẫn là một xe, một route mỗi ngày, capacity ignored.
 
 ## 4. Cài đặt
 
@@ -172,9 +210,11 @@ Kết quả được ghi vào `results/schedules/{solver}/`.
 ```bash
 python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time_windows.csv --solver nearest
 python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time_windows.csv --solver deadline
-python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time_windows.csv --solver regret
-python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time_windows.csv --solver cp_full_week --cp-max-customers 300 --cp-time-limit-sec 60
-python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time_windows.csv --solver cp_rolling --cp-max-candidates-per-day 80 --cp-time-limit-per-day-sec 10
+python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time_windows.csv --solver min_deferral
+python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time_windows.csv --solver regret_dispatch_ls --save-results
+python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time_windows.csv --solver hybrid_genetic_vns --ga-population-size 30 --ga-generations 50 --ga-time-limit-sec 180 --save-results
+python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time_windows.csv --solver cp_full_week --cp-max-customers 40 --cp-time-limit-sec 60
+python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time_windows.csv --solver cp_rolling --cp-max-candidates-per-day 80 --cp-time-limit-per-day-sec 10 --cp-two-phase-objective --cp-candidate-strategy hybrid
 ```
 
 Thêm `--save-results` để ghi `result.json`, `result.txt`, `daily_schedule.csv` và `incomplete_orders.csv`.
@@ -187,9 +227,11 @@ Chạy so sánh nhiều solver:
 python -m vrp_weekly.benchmark \
   --locations data/locations.csv \
   --time-windows data/time_windows.csv \
-  --solvers nearest deadline regret cp_rolling \
+  --solvers nearest deadline min_deferral inferior_insertion_ls regret_dispatch_ls hybrid_genetic_vns cp_rolling \
   --cp-max-candidates-per-day 80 \
-  --cp-time-limit-per-day-sec 10
+  --cp-time-limit-per-day-sec 10 \
+  --cp-two-phase-objective \
+  --cp-candidate-strategy hybrid
 ```
 
 Xuất thêm report CSV chi tiết và biểu đồ:
@@ -198,9 +240,11 @@ Xuất thêm report CSV chi tiết và biểu đồ:
 python -m vrp_weekly.benchmark \
   --locations data/locations.csv \
   --time-windows data/time_windows.csv \
-  --solvers nearest deadline regret cp_rolling \
+  --solvers nearest deadline min_deferral cp_rolling \
   --cp-max-candidates-per-day 80 \
   --cp-time-limit-per-day-sec 10 \
+  --cp-two-phase-objective \
+  --cp-candidate-strategy hybrid \
   --export-report
 ```
 
@@ -215,6 +259,20 @@ Output chính:
 - `results/schedules/{solver}/result.txt`
 - `results/schedules/{solver}/daily_schedule.csv`
 - `results/schedules/{solver}/incomplete_orders.csv`
+
+Chạy diagnostic grid riêng cho `cp_rolling`:
+
+```bash
+python -m vrp_weekly.benchmark \
+  --locations data/locations.csv \
+  --time-windows data/time_windows.csv \
+  --solvers cp_rolling \
+  --cp-diagnostic-grid \
+  --export-report
+```
+
+Grid này thử các giới hạn candidate `30, 40, 50, 60, 80` và time limit/ngày `30, 60, 120`, rồi ghi `results/comparison/cp_diagnostic_grid.csv`.
+File grid được ghi tăng dần sau từng profile; nếu run bị dừng, chạy lại cùng lệnh sẽ bỏ qua profile đã có trong CSV.
 
 ## 9. So sánh kết quả đã lưu
 
@@ -267,6 +325,15 @@ Một số mặc định quan trọng:
 - `REQUIRE_RETURN_BEFORE_DAY_END = True`
 - `FLEXIBLE_DEPOT_DEPARTURE = True`
 
+Các trọng số cần chỉnh khi tuning:
+
+- Metrics/evaluator P-weights nằm trong `src/vrp_weekly/config.py`: `WEIGHT_INCOMPLETE`, `WEIGHT_DEFERRAL`, `WEIGHT_DISTANCE_KM`, `WEIGHT_WAITING_MIN`, `WEIGHT_ACTIVE_DAY`, `WEIGHT_ROUTE_DURATION_MIN`.
+- CP rolling drop penalties nằm trong `src/vrp_weekly/config.py`: `DROP_PENALTY_BY_DAY`.
+- CP objective defaults đi qua `src/vrp_weekly/model_factory.py`: `distance_weight=10`, `route_duration_weight=1`, `urgency_weight=100`.
+- CP rolling defaults: `candidate_strategy="hybrid"`, `use_service_no_overlap=True`, `use_decision_strategy=True`, `solve_phase2=True`.
+- `min_deferral` secondary route-cost defaults nằm trong `src/vrp_weekly/models/min_deferral.py`: `distance_weight=10.0`, `WAITING_WEIGHT`, `duration_weight=0.0`.
+- Bản ghi report-friendly nằm trong `params/default_params.txt`.
+
 ## 12. Test
 
 Chạy toàn bộ unit test:
@@ -277,7 +344,14 @@ python -m pytest
 
 Test hiện tập trung vào logic heuristic/model helper, feasibility và các thao tác cải thiện tuyến.
 
-## 13. Ghi chú giới hạn hiện tại
+## 13. Quy ước bảo trì
+
+- Mọi thay đổi liên quan đến hệ thống, solver, CLI, benchmark, output, dữ liệu hoặc cách chạy phải cập nhật README trong cùng lượt thay đổi.
+- Solver/model mới phải được đặt trong `src/vrp_weekly/models/` và đăng ký qua `src/vrp_weekly/model_factory.py`.
+- Không tạo lại package `src/vrp_weekly/solvers/`; repo hiện dùng `models/` làm nơi chứa solver.
+- Solver cũ `regret` đã bị gỡ khỏi code path chính; baseline thứ ba hiện chỉ là `min_deferral`.
+
+## 14. Ghi chú giới hạn hiện tại
 
 - Đây là mô hình một xe, chưa kích hoạt ràng buộc capacity.
 - `cp_full_week` tạo nhiều biến cung theo ngày nên có thể rất lớn với 300 khách hàng; dùng `--cp-max-customers` khi cần giới hạn.

@@ -5,6 +5,7 @@ from __future__ import annotations
 import csv
 import json
 import os
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -287,8 +288,9 @@ def export_report_files(
 
 def export_benchmark_plots(summary_csv: str | Path, output_dir: str | Path) -> None:
     """Export simple benchmark bar plots using matplotlib."""
-    os.environ.setdefault("MPLCONFIGDIR", "/tmp/matplotlib")
-    os.environ.setdefault("XDG_CACHE_HOME", "/tmp")
+    temp_dir = Path(tempfile.gettempdir())
+    os.environ.setdefault("MPLCONFIGDIR", str(temp_dir / "matplotlib"))
+    os.environ.setdefault("XDG_CACHE_HOME", str(temp_dir))
     Path(os.environ["MPLCONFIGDIR"]).mkdir(parents=True, exist_ok=True)
     from matplotlib import pyplot as plt
 

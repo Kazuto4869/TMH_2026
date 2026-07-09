@@ -1,105 +1,41 @@
 customer_id,customer_name,demand_kg,available_days
-C001,Khach_Hang_001,0.6,2 3 4 5 7
-C004,Khach_Hang_004,3.9,6 7
+C011,Khach_Hang_011,4.3,2 3 4 7
 C012,Khach_Hang_012,1.7,1 3 4 5 7
-C014,Khach_Hang_014,1.7,1 3
-C016,Khach_Hang_016,0.8,1 4
-C020,Khach_Hang_020,2.8,2 4 5 7
 C026,Khach_Hang_026,4.4,2 4 6 7
 C028,Khach_Hang_028,2.2,1 2 3 4 7
 C029,Khach_Hang_029,3.2,3 7
 C037,Khach_Hang_037,0.6,1 3 5 6 7
-C040,Khach_Hang_040,2.7,1 2
 C042,Khach_Hang_042,2.4,1 2 3 5 7
 C043,Khach_Hang_043,0.7,1 3 4 6 7
-C045,Khach_Hang_045,2.5,1 3 4 5 7
-C047,Khach_Hang_047,3.4,1 2 5 6 7
-C048,Khach_Hang_048,1.2,1 4
-C049,Khach_Hang_049,4.6,1 3 6 7
 C050,Khach_Hang_050,1.7,2 3 6 7
-C058,Khach_Hang_058,2.9,1 7
-C064,Khach_Hang_064,2.9,1 7
-C073,Khach_Hang_073,1.1,1 2 3
-C074,Khach_Hang_074,4.5,1 2 6
-C076,Khach_Hang_076,1.6,1 2 3 4 5
-C077,Khach_Hang_077,2.0,1 2 4 5
-C078,Khach_Hang_078,4.0,1 3 4
 C079,Khach_Hang_079,4.2,1 7
 C080,Khach_Hang_080,1.5,2 3 4 6 7
 C082,Khach_Hang_082,3.6,3 5 7
-C083,Khach_Hang_083,1.3,4 5
-C085,Khach_Hang_085,1.0,1 2
 C087,Khach_Hang_087,3.8,2 4 6 7
-C088,Khach_Hang_088,4.6,1 7
 C090,Khach_Hang_090,2.0,2 4 5 6 7
-C093,Khach_Hang_093,1.9,1 4 6 7
-C097,Khach_Hang_097,3.5,2 6 7
 C099,Khach_Hang_099,3.3,1 3 4
-C102,Khach_Hang_102,3.0,2 3
+C103,Khach_Hang_103,3.5,2 3 6 7
 C104,Khach_Hang_104,3.3,2 3 4 5 7
-C106,Khach_Hang_106,4.3,1 2 3 4 5 6
 C108,Khach_Hang_108,1.6,1 2 3 6 7
-C109,Khach_Hang_109,2.2,4 6 7
 C111,Khach_Hang_111,4.2,4 7
-C113,Khach_Hang_113,1.8,4 5 7
-C117,Khach_Hang_117,2.9,1 2 5
-C118,Khach_Hang_118,0.9,1 3 4 5 7
-C120,Khach_Hang_120,1.8,1 2 3 6 7
 C127,Khach_Hang_127,3.1,2 3 5 6 7
-C128,Khach_Hang_128,4.2,4 5
 C132,Khach_Hang_132,4.2,1 2 4 6 7
 C133,Khach_Hang_133,3.7,1 2 3 4 7
-C136,Khach_Hang_136,4.2,1 2 3 4 7
-C138,Khach_Hang_138,1.3,6 7
-C142,Khach_Hang_142,2.5,1 5 7
-C146,Khach_Hang_146,1.4,2 3 5 7
-C149,Khach_Hang_149,4.2,1 4 7
-C151,Khach_Hang_151,3.0,1 2 3
-C154,Khach_Hang_154,1.0,1 3
 C155,Khach_Hang_155,3.3,1 4 5 6 7
-C162,Khach_Hang_162,3.6,2 3
-C164,Khach_Hang_164,4.7,2 3 5 6 7
-C170,Khach_Hang_170,1.6,2 5
 C173,Khach_Hang_173,3.4,1 3 4 5 7
-C175,Khach_Hang_175,1.8,1 2
-C185,Khach_Hang_185,3.0,1 2 3 6 7
-C186,Khach_Hang_186,4.4,2 3 4
-C188,Khach_Hang_188,3.1,1 3 6 7
 C190,Khach_Hang_190,4.4,4 5 7
 C191,Khach_Hang_191,4.4,1 3 4 6 7
-C193,Khach_Hang_193,1.2,1 3 4 5 7
 C195,Khach_Hang_195,0.6,2 3 5 6 7
-C196,Khach_Hang_196,4.0,1 2 4 5 7
-C197,Khach_Hang_197,3.4,1 2 3 4 7
 C199,Khach_Hang_199,1.6,2 3 4 6 7
+C200,Khach_Hang_200,0.9,3 5 7
 C202,Khach_Hang_202,2.1,1 3 4 5 7
 C208,Khach_Hang_208,3.6,3 6 7
 C210,Khach_Hang_210,3.1,1 3 4 5 7
-C212,Khach_Hang_212,4.6,3 4 7
 C213,Khach_Hang_213,1.5,2 4 5 6 7
-C219,Khach_Hang_219,4.2,4 5 7
-C220,Khach_Hang_220,4.1,1 2 4 5 6
-C222,Khach_Hang_222,2.1,1 2 3 4 6
-C226,Khach_Hang_226,1.5,2 4 5 6 7
-C233,Khach_Hang_233,2.2,1 5
-C234,Khach_Hang_234,1.4,1 3 5 7
-C238,Khach_Hang_238,4.0,2 3
-C240,Khach_Hang_240,3.5,1 2 7
 C244,Khach_Hang_244,2.8,1 2 3 5 7
-C250,Khach_Hang_250,3.2,3 4 5
-C253,Khach_Hang_253,1.9,2 4 6 7
 C259,Khach_Hang_259,3.1,2 4 6 7
-C261,Khach_Hang_261,3.1,1 5 7
 C262,Khach_Hang_262,3.4,1 2 3 4 7
 C267,Khach_Hang_267,3.7,1 4 7
-C269,Khach_Hang_269,2.5,2 3
 C273,Khach_Hang_273,4.8,1 3 7
 C277,Khach_Hang_277,4.6,1 2 7
-C279,Khach_Hang_279,4.8,2 3 5 7
-C281,Khach_Hang_281,2.9,3 4
-C287,Khach_Hang_287,3.9,2 3 4 5
-C289,Khach_Hang_289,2.6,1 4
-C292,Khach_Hang_292,3.3,2 3 5 7
-C293,Khach_Hang_293,4.8,2 3 4 5 7
-C296,Khach_Hang_296,0.9,1 3 5
-C298,Khach_Hang_298,2.1,1 4 7
+C286,Khach_Hang_286,0.8,1 2 4 5 7

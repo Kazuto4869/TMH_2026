@@ -84,6 +84,12 @@ METRIC_COLUMNS = [
     "total_route_duration_min",
     "objective_value",
     "runtime_sec",
+    "max_day_gap_percent",
+    "total_fixed_impossible_arcs",
+    "average_fixed_arc_ratio",
+    "total_route_interval_count",
+    "route_no_overlap_days",
+    "total_remaining_after_week",
     "hard_feasible",
 ]
 
@@ -92,15 +98,13 @@ SORT_BY = [
     "total_deferral_days",
     "total_distance_km",
     "total_waiting_time_min",
+    "runtime_sec",
 ]
 
 # =========================
-# Regret insertion heuristic
+# Min-deferral baseline
 # =========================
 
-REGRET_WEIGHT = 1.0
-INSERTION_WEIGHT = 1.0
-URGENCY_WEIGHT = 100.0
 WAITING_WEIGHT = 0.2
 
 ENABLE_LOCAL_SEARCH = True

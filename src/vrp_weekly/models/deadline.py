@@ -13,7 +13,13 @@ LOGGER = logging.getLogger(__name__)
 
 
 class EarliestDeadlineSolver:
-    """Greedy baseline that chooses the feasible next customer with earliest window end."""
+    """Pure append-only earliest-feasible-deadline baseline.
+
+    Each day starts from an empty route and repeatedly appends the feasible
+    undelivered customer with the earliest selected time-window end. Ties are
+    broken by selected window start, travel time, then customer id. This
+    baseline does not insert into the middle or optimize deferral.
+    """
 
     name = "deadline"
 

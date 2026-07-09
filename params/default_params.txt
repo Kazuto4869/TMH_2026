@@ -44,16 +44,12 @@ WEIGHT_ACTIVE_DAY = 100
 WEIGHT_ROUTE_DURATION_MIN = 0
 DEFERRAL_DAYS = delivered_day - earliest_available_day
 
-[regret_insertion]
-REGRET_WEIGHT = 1.0
-INSERTION_WEIGHT = 1.0
-URGENCY_WEIGHT = 100.0
+[min_deferral]
 WAITING_WEIGHT = 0.2
 ENABLE_LOCAL_SEARCH = true
 LOCAL_SEARCH_OPERATORS = relocate, swap, two_opt
 MAX_LOCAL_SEARCH_ITERATIONS = 1000
-FIRST_IMPROVEMENT = true
-LAST_AVAILABLE_DAY_URGENCY = 10.0
+POST_FILL = true
 
 [cp_daily]
 CP_TIME_LIMIT_PER_DAY_SEC = 10
@@ -61,6 +57,22 @@ CP_FIRST_SOLUTION_STRATEGY = PATH_CHEAPEST_ARC
 CP_LOCAL_SEARCH_METAHEURISTIC = GUIDED_LOCAL_SEARCH
 ALLOW_DROPPING_CUSTOMERS_DAILY = true
 DROP_PENALTY_BY_DAY = 1:10000, 2:15000, 3:25000, 4:40000, 5:70000, 6:120000, 7:1000000
+DISTANCE_OBJECTIVE_SCALE = km
+CP_DISTANCE_OBJECTIVE_COST = round(distance_weight * distance_km)
+CP_ROLLING_PURE_CP = true
+CP_ROLLING_USES_MIN_DEFERRAL_FALLBACK = false
+CP_ROLLING_USES_MIN_DEFERRAL_HINT = false
+CP_TWO_PHASE_OBJECTIVE_DEFAULT = true
+CP_PHASE1_OBJECTIVE = maximize delivered_count
+CP_PHASE2_OBJECTIVE = minimize distance + route_duration - urgency with delivered_count fixed
+CP_CANDIDATE_STRATEGY_DEFAULT = hybrid
+CP_CANDIDATE_STRATEGIES = urgent, hybrid
+CP_USE_SERVICE_NO_OVERLAP = true
+CP_USE_DECISION_STRATEGY = true
+CP_SOLVE_PHASE2 = true
+CP_DIAGNOSTIC_GRID_CANDIDATES = 30, 40, 50, 60, 80
+CP_DIAGNOSTIC_GRID_TIME_LIMITS_PER_DAY_SEC = 30, 60, 120
+CP_TIGHTENING_CONSTRAINTS = degree_linking, arc_linking, tight_T_bounds, service_duration_lb, roundtrip_duration_lb, service_no_overlap, fixed_impossible_customers, window_pair_cuts, pair_conflict_cuts, depot_window_cuts, dominated_window_cuts, precedence_cuts
 
 [observed_data_summary]
 N_LOCATIONS = 301
@@ -80,5 +92,5 @@ AVG_AVAILABLE_DAYS_PER_CUSTOMER = 3.66
 MAX_AVAILABLE_DAYS_PER_CUSTOMER = 6
 
 [benchmark]
-METRIC_COLUMNS = solver, delivered_count, incomplete_count, active_days, total_deferral_days, total_distance_km, total_travel_time_min, total_waiting_time_min, total_service_time_min, total_route_duration_min, objective_value, runtime_sec, hard_feasible
+METRIC_COLUMNS = solver, delivered_count, incomplete_count, active_days, total_deferral_days, total_distance_km, total_travel_time_min, total_waiting_time_min, total_service_time_min, total_route_duration_min, objective_value, runtime_sec, max_day_gap_percent, total_fixed_impossible_arcs, average_fixed_arc_ratio, total_remaining_after_week, hard_feasible
 SORT_BY = incomplete_count, total_deferral_days, total_distance_km, total_waiting_time_min

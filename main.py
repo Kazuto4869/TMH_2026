@@ -59,15 +59,55 @@ def main() -> int:
     cp_max_candidates_per_day: int | None = None
     cp_threads = 8
     cp_log_search = False
+    cp_two_phase_objective = True
+    cp_random_seed = 1
+    cp_use_decision_strategy = True
+    cp_use_service_no_overlap = True
+    cp_candidate_strategy = "hybrid"
+    cp_solve_phase2 = True
+    heuristic_max_candidates_per_day: int | None = None
+    heuristic_random_seed = 1
+    heuristic_use_local_search = False
+    local_search_time_limit_sec = 10
+    local_search_max_iterations = 100
+    ga_population_size = 30
+    ga_generations = 50
+    ga_elite_size = 5
+    ga_mutation_rate = 0.10
+    ga_crossover_rate = 0.80
+    ga_time_limit_sec = 120
+    has_ls_model = any(model_name.endswith("_ls") or model_name == "hybrid_genetic_vns" for model_name in selected_models)
     if has_cp_full_week:
         cp_time_limit_sec = _prompt_int("Full-week CP time limit in seconds", 60, minimum=1)
-        cp_max_customers = _prompt_optional_int("Full-week CP max customers", default=300, minimum=1)
+        cp_max_customers = _prompt_optional_int("Full-week CP max customers", default=40, minimum=1)
     if has_cp_rolling:
         cp_time_limit_per_day_sec = _prompt_int("Rolling CP time limit per day in seconds", 10, minimum=1)
         cp_max_candidates_per_day = _prompt_optional_int("Rolling CP max candidates per day", default=80, minimum=1)
+        cp_two_phase_objective = _prompt_yes_no("Use pure two-phase rolling CP objective", default=True)
+        cp_random_seed = _prompt_int("CP random seed", 1, minimum=0)
+        cp_use_decision_strategy = _prompt_yes_no("Use optional y-first CP decision strategy", default=True)
+        cp_use_service_no_overlap = _prompt_yes_no("Use service NoOverlap intervals", default=True)
+        cp_candidate_strategy = _prompt_choice("Rolling CP candidate strategy", ["hybrid", "urgent"], default="hybrid")
+        cp_solve_phase2 = not _prompt_yes_no("Run phase 1 only", default=False)
     if has_cp_model:
         cp_threads = _prompt_int("CP workers", 8, minimum=1)
         cp_log_search = _prompt_yes_no("Show CP-SAT run log in terminal", default=False)
+    if any(model_name in {"inferior_insertion", "inferior_insertion_ls", "regret_dispatch", "regret_dispatch_ls"} for model_name in selected_models):
+        heuristic_max_candidates_per_day = _prompt_optional_int("Heuristic max candidates per day", default=0, minimum=1)
+        if heuristic_max_candidates_per_day == 0:
+            heuristic_max_candidates_per_day = None
+        heuristic_random_seed = _prompt_int("Heuristic random seed", 1, minimum=0)
+    if has_ls_model:
+        heuristic_use_local_search = True
+        local_search_time_limit_sec = _prompt_int("Local search time limit per route in seconds", 10, minimum=1)
+        local_search_max_iterations = _prompt_int("Local search max iterations per route", 100, minimum=1)
+    if "hybrid_genetic_vns" in selected_models:
+        ga_population_size = _prompt_int("Hybrid GA population size", 30, minimum=1)
+        ga_generations = _prompt_int("Hybrid GA generations", 50, minimum=1)
+        ga_elite_size = _prompt_int("Hybrid GA elite size", 5, minimum=1)
+        ga_mutation_rate = float(_prompt_int("Hybrid GA mutation rate percent", 10, minimum=0)) / 100.0
+        ga_crossover_rate = float(_prompt_int("Hybrid GA crossover rate percent", 80, minimum=0)) / 100.0
+        ga_time_limit_sec = _prompt_int("Hybrid GA time limit in seconds", 120, minimum=1)
 
     instance = load_instance(locations_path, time_windows_path)
     run_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -84,6 +124,23 @@ def main() -> int:
             cp_max_candidates_per_day=cp_max_candidates_per_day,
             cp_workers=cp_threads,
             cp_log_search=cp_log_search,
+            cp_two_phase_objective=cp_two_phase_objective,
+            cp_random_seed=cp_random_seed,
+            cp_use_decision_strategy=cp_use_decision_strategy,
+            cp_use_service_no_overlap=cp_use_service_no_overlap,
+            cp_candidate_strategy=cp_candidate_strategy,
+            cp_solve_phase2=cp_solve_phase2,
+            heuristic_max_candidates_per_day=heuristic_max_candidates_per_day,
+            heuristic_random_seed=heuristic_random_seed,
+            heuristic_use_local_search=heuristic_use_local_search,
+            local_search_time_limit_sec=local_search_time_limit_sec,
+            local_search_max_iterations=local_search_max_iterations,
+            ga_population_size=ga_population_size,
+            ga_generations=ga_generations,
+            ga_elite_size=ga_elite_size,
+            ga_mutation_rate=ga_mutation_rate,
+            ga_crossover_rate=ga_crossover_rate,
+            ga_time_limit_sec=ga_time_limit_sec,
         )
         schedule = model.solve(instance)
         runtime_sec = time.perf_counter() - start_time
@@ -117,6 +174,12 @@ def main() -> int:
                     cp_max_candidates_per_day=cp_max_candidates_per_day,
                     cp_threads=cp_threads,
                     cp_log_search=cp_log_search,
+                    cp_two_phase_objective=cp_two_phase_objective,
+                    cp_random_seed=cp_random_seed,
+                    cp_use_decision_strategy=cp_use_decision_strategy,
+                    cp_use_service_no_overlap=cp_use_service_no_overlap,
+                    cp_candidate_strategy=cp_candidate_strategy,
+                    cp_solve_phase2=cp_solve_phase2,
                 ),
             )
         else:
@@ -239,6 +302,18 @@ def _prompt_yes_no(label: str, default: bool = False) -> bool:
         print("Please answer y or n.")
 
 
+def _prompt_choice(label: str, choices: list[str], default: str) -> str:
+    """Prompt for one value from a small option set."""
+    choices_text = "/".join(choices)
+    while True:
+        raw_value = input(f"{label} [{default}; {choices_text}]: ").strip().lower()
+        if not raw_value:
+            return default
+        if raw_value in choices:
+            return raw_value
+        print(f"Please enter one of: {', '.join(choices)}")
+
+
 def _build_run_log_row(
     model_name: str,
     timestamp: str,
@@ -287,6 +362,12 @@ def _build_rolling_run_log_rows(
     cp_max_candidates_per_day: int | str | None,
     cp_threads: int | str,
     cp_log_search: bool | str,
+    cp_two_phase_objective: bool | str,
+    cp_random_seed: int | str,
+    cp_use_decision_strategy: bool | str,
+    cp_use_service_no_overlap: bool | str,
+    cp_candidate_strategy: str,
+    cp_solve_phase2: bool | str,
 ) -> list[dict[str, object]]:
     """Build day-level rows plus a summary row for rolling-horizon CP."""
     rows: list[dict[str, object]] = []
@@ -315,6 +396,33 @@ def _build_rolling_run_log_rows(
                     "cp_max_candidates_per_day": "" if cp_max_candidates_per_day is None else cp_max_candidates_per_day,
                     "cp_threads": cp_threads,
                     "cp_log_search": cp_log_search,
+                    "cp_two_phase_objective": cp_two_phase_objective,
+                    "cp_random_seed": cp_random_seed,
+                    "cp_use_decision_strategy": cp_use_decision_strategy,
+                    "cp_use_service_no_overlap": cp_use_service_no_overlap,
+                    "cp_candidate_strategy": cp_candidate_strategy,
+                    "cp_solve_phase2": cp_solve_phase2,
+                    "objective_mode": day_status.get("objective_mode", ""),
+                    "daily_optimal_for": day_status.get("daily_optimal_for", ""),
+                    "fixed_impossible_arcs": day_status.get("fixed_impossible_arcs", ""),
+                    "total_nonself_arcs": day_status.get("total_nonself_arcs", ""),
+                    "fixed_arc_ratio": day_status.get("fixed_arc_ratio", ""),
+                    "distance_objective_scale": day_status.get("distance_objective_scale", ""),
+                    "drop_penalty": day_status.get("drop_penalty", ""),
+                    "distance_weight": day_status.get("distance_weight", ""),
+                    "degree_linking_constraints_count": day_status.get("degree_linking_constraints_count", ""),
+                    "arc_linking_constraints_count": day_status.get("arc_linking_constraints_count", ""),
+                    "window_pair_cuts_count": day_status.get("window_pair_cuts_count", ""),
+                    "pair_conflict_cuts_count": day_status.get("pair_conflict_cuts_count", ""),
+                    "depot_window_cuts_count": day_status.get("depot_window_cuts_count", ""),
+                    "dominated_window_cuts_count": day_status.get("dominated_window_cuts_count", ""),
+                    "precedence_cuts_count": day_status.get("precedence_cuts_count", ""),
+                    "phase1_status": day_status.get("phase1_status", ""),
+                    "phase2_status": day_status.get("phase2_status", ""),
+                    "service_interval_count": day_status.get("service_interval_count", ""),
+                    "roundtrip_duration_lb_count": day_status.get("roundtrip_duration_lb_count", ""),
+                    "fixed_impossible_customers_count": day_status.get("fixed_impossible_customers_count", ""),
+                    "candidate_strategy": day_status.get("candidate_strategy", ""),
                     "delivered_count": "",
                     "incomplete_count": "",
                     "active_days": "",
@@ -346,6 +454,12 @@ def _build_rolling_run_log_rows(
     summary_row["day"] = "SUMMARY"
     summary_row["complete_count"] = metrics.get("delivered_count", "")
     summary_row["carried_over_count"] = metrics.get("incomplete_count", "")
+    summary_row["cp_two_phase_objective"] = cp_two_phase_objective
+    summary_row["cp_random_seed"] = cp_random_seed
+    summary_row["cp_use_decision_strategy"] = cp_use_decision_strategy
+    summary_row["cp_use_service_no_overlap"] = cp_use_service_no_overlap
+    summary_row["cp_candidate_strategy"] = cp_candidate_strategy
+    summary_row["cp_solve_phase2"] = cp_solve_phase2
     rows.append(summary_row)
     return rows
 

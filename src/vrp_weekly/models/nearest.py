@@ -13,7 +13,13 @@ LOGGER = logging.getLogger(__name__)
 
 
 class NearestNeighborSolver:
-    """Greedy nearest-neighbor weekly routing baseline."""
+    """Pure append-only nearest-feasible-customer baseline.
+
+    Each day starts from an empty route and repeatedly appends the feasible
+    undelivered customer closest to the current location. Ties are broken by
+    selected window end, selected window start, then customer id. This baseline
+    does not insert into the middle, optimize deferral, or run local search.
+    """
 
     name = "nearest"
 

@@ -64,6 +64,7 @@ def _row_from_result(path: Path) -> dict[str, Any]:
     """Convert one saved result JSON into a comparison table row."""
     payload = json.loads(path.read_text(encoding="utf-8"))
     metrics = dict(payload["metrics"])
+    solver_status = payload.get("solver_status", {})
     row: dict[str, Any] = {
         "solver": payload.get("solver", path.parent.name),
         "delivered_count": metrics["delivered_count"],
@@ -76,7 +77,13 @@ def _row_from_result(path: Path) -> dict[str, Any]:
         "total_service_time_min": metrics["total_service_time_min"],
         "total_route_duration_min": metrics["total_route_duration_min"],
         "objective_value": metrics["objective_value"],
-        "runtime_sec": metrics.get("runtime_sec", ""),
+        "runtime_sec": metrics.get("runtime_sec", solver_status.get("runtime_sec", "")),
+        "max_day_gap_percent": solver_status.get("max_day_gap_percent", ""),
+        "total_fixed_impossible_arcs": solver_status.get("total_fixed_impossible_arcs", ""),
+        "average_fixed_arc_ratio": solver_status.get("average_fixed_arc_ratio", ""),
+        "total_route_interval_count": solver_status.get("total_route_interval_count", ""),
+        "route_no_overlap_days": solver_status.get("route_no_overlap_days", ""),
+        "total_remaining_after_week": solver_status.get("total_remaining_after_week", ""),
         "hard_feasible": metrics["hard_feasible"],
     }
     return {column: row[column] for column in METRIC_COLUMNS}

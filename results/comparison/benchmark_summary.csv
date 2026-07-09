@@ -1,5 +1,5 @@
-delivered_count,incomplete_count,total_distance_km,total_travel_time_min,total_waiting_time_min,total_service_time_min,total_route_duration_min,number_of_active_days,active_days,total_deferral_days,hard_feasible,objective_value,solver,runtime_sec
-297,3,1615.4946292917311,2086,4296,2196,8578,7,7,737,True,10390450.946292918,regret,87.39156789099798
-291,9,1318.2245880347796,1712,4389,2147,8248,7,7,610,True,15117571.245880349,cp,70.11112238599162
-284,16,2033.1580152872277,2573,3827,2093,8493,7,7,721,True,23234158.580152873,deadline,1.0773139270022511
-204,96,749.7068479222389,999,6243,1512,8754,7,7,736,True,103373740.06847923,nearest,1.1129863629903411
+solver,delivered_count,incomplete_count,active_days,total_deferral_days,total_distance_km,total_travel_time_min,total_waiting_time_min,total_service_time_min,total_route_duration_min,objective_value,runtime_sec,max_day_gap_percent,total_fixed_impossible_arcs,average_fixed_arc_ratio,total_route_interval_count,route_no_overlap_days,total_remaining_after_week,hard_feasible
+min_deferral,300,0,7,564,1743.4564803101212,2236,857,2226,5319,5658991.564803101,273.96246299998893,,,,,,,True
+deadline,286,14,7,537,1994.1873080436337,2522,387,2110,5019,19391028.873080436,5.106748799997149,,,,,,,True
+nearest,201,99,7,612,750.6468645117739,996,2320,1495,4811,105130526.46864511,1.1598305000079563,,,,,,,True
+cp_rolling,184,116,7,342,2223.0292465726084,2760,791,1379,4930,119443721.29246573,439.9616151000082,220.0,6841,0.15081569664903,568,7,116,True

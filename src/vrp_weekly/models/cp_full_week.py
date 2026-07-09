@@ -39,6 +39,12 @@ def _distance_scaled(instance: Instance, i: str, j: str) -> int:
     return int(round(distance_km * DISTANCE_SCALE))
 
 
+def _distance_objective_cost(instance: Instance, i: str, j: str, distance_weight: int | float) -> int:
+    """Return CP objective distance cost in kilometer scale, not meter scale."""
+    distance_km = euclidean_distance_km(instance.locations[i], instance.locations[j])
+    return int(round(distance_weight * distance_km))
+
+
 def _get_service_time(instance: Instance, i: str) -> int:
     """Return service time for a customer, with zero service at depots."""
     location = instance.locations[i]
@@ -91,7 +97,6 @@ def _build_daily_schedule_from_solution(
     service_start_times: dict[str, int],
     selected_windows: dict[str, TimeWindow],
     depot_departure_time: int = 0,
-    return_to_depot_time: int | None = None,
 ) -> DailyRoute:
     """Build a project-compatible daily route from CP solution values."""
     previous_id = instance.depot_id
@@ -154,16 +159,15 @@ def _build_daily_schedule_from_solution(
     route_distance_km += return_distance_km
     route_travel_time_min += return_travel_time
     actual_return = previous_departure + return_travel_time if route_sequence else 0
-    route_return = actual_return if return_to_depot_time is None else return_to_depot_time
-    if route_return > DAY_END_MIN:
+    if actual_return > DAY_END_MIN:
         violations.append(f"Route on day {day} returns after 24:00")
 
-    route_duration = route_return - depot_departure_time if route_sequence else 0
+    route_duration = actual_return - depot_departure_time if route_sequence else 0
     return DailyRoute(
         day=day,
         stops=stops,
         depot_departure_time=depot_departure_time if route_sequence else 0,
-        return_to_depot_time=route_return if route_sequence else 0,
+        return_to_depot_time=actual_return if route_sequence else 0,
         route_distance_km=route_distance_km if route_sequence else 0.0,
         route_travel_time_min=route_travel_time_min if route_sequence else 0,
         route_waiting_time_min=route_waiting_time_min if route_sequence else 0,
@@ -175,10 +179,10 @@ def _build_daily_schedule_from_solution(
 
 
 class FullWeekCPSATSolver:
-    """Solve the weekly routing model as one CP-SAT model.
+    """Full-week CP-SAT mathematical demonstration.
 
-    This is mainly a mathematical-model demonstration. For real data, prefer
-    `RollingHorizonCPSATSolver` because the full model has O(7*n^2) arc vars.
+    Use `RollingHorizonCPSATSolver` for real data because this model has
+    O(7*n^2) arc variables.
     """
 
     name = "cp_full_week"
@@ -186,7 +190,7 @@ class FullWeekCPSATSolver:
     def __init__(
         self,
         time_limit_sec: int = 60,
-        max_customers: int | None = 300,
+        max_customers: int | None = 40,
         incomplete_weight: int = 1_000_000,
         deferral_weight: int = 10_000,
         distance_weight: int = 10,
@@ -206,13 +210,19 @@ class FullWeekCPSATSolver:
     def solve(self, instance: Instance) -> WeeklySchedule:
         """Build, solve, and extract a full-week CP-SAT schedule."""
         customers = instance.customer_ids()
+        total_customers = len(customers)
+        if self.max_customers is None and total_customers > 80:
+            raise ValueError(
+                "cp_full_week has O(7*n^2) arc variables and is intended only for small instances. "
+                "Use cp_rolling for real data."
+            )
+        if self.max_customers is not None and self.max_customers > 80:
+            LOGGER.warning(
+                "cp_full_week max_customers=%s can create a large O(7*n^2) model; use cp_rolling for real data.",
+                self.max_customers,
+            )
         if self.max_customers is not None:
             customers = customers[: self.max_customers]
-        elif len(customers) > 80:
-            LOGGER.warning(
-                "Full-week CP-SAT model has %s customers and no max_customers; this can be very large.",
-                len(customers),
-            )
 
         if not customers:
             return WeeklySchedule(routes={day: DailyRoute(day=day) for day in range(MONDAY, SUNDAY + 1)})
@@ -319,7 +329,7 @@ class FullWeekCPSATSolver:
                 for j in nodes:
                     if i == j:
                         continue
-                    objective_terms.append(self.distance_weight * _distance_scaled(instance, i, j) * x[i, j, day])
+                    objective_terms.append(_distance_objective_cost(instance, i, j, self.distance_weight) * x[i, j, day])
             objective_terms.append(self.route_duration_weight * (return_time[day] - departure[day]))
 
         model.Minimize(sum(objective_terms))
@@ -381,7 +391,6 @@ class FullWeekCPSATSolver:
                 service_start_times=start_times,
                 selected_windows=selected_windows,
                 depot_departure_time=solver.Value(departure[day]),
-                return_to_depot_time=solver.Value(return_time[day]),
             )
             LOGGER.info("cp_full_week day=%s extracted stops=%s", day, len(routes[day].stops))
 
