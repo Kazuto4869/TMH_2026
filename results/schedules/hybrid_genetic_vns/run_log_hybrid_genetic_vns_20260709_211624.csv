@@ -1,0 +1,2 @@
+timestamp,model,row_type,day,runtime_sec,solver_status,gap_percent,cp_time_limit_sec,cp_time_limit_per_day_sec,cp_max_customers,cp_max_candidates_per_day,cp_threads,cp_log_search,delivered_count,incomplete_count,total_distance_km,total_travel_time_min,total_waiting_time_min,total_service_time_min,total_route_duration_min,number_of_active_days,active_days,total_deferral_days,hard_feasible,objective_value,violation_count
+20260709_211624,hybrid_genetic_vns,SUMMARY,,265.791470,HEURISTIC_FEASIBLE,,,,,,,,297,3,1643.2697764743132,2124,961,2207,5292,7,7,575,True,8768093.697764743,0

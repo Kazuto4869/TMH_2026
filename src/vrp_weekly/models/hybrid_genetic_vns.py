@@ -166,6 +166,16 @@ class HybridGeneticVNSSolver:
             self._chromosome_from_priority(instance, sorted(customers, key=lambda c: (earliest_available_day(instance, c) or SUNDAY, c))),
             self._chromosome_from_priority(instance, sorted(customers, key=lambda c: (-_inferior_seed_score(instance, MONDAY, c, customers), c))),
             self._chromosome_from_priority(instance, sorted(customers, key=lambda c: (-_defer_seed_score(instance, MONDAY, c), c))),
+            self._chromosome_from_priority(
+                instance,
+                sorted(customers, key=lambda c: (-_inferior_seed_score(instance, MONDAY, c, customers), c)),
+                day_strategy="latest",
+            ),
+            self._chromosome_from_priority(
+                instance,
+                sorted(customers, key=lambda c: (-_defer_seed_score(instance, MONDAY, c), c)),
+                day_strategy="latest",
+            ),
         ]
         while len(seeds) < max(1, self.population_size):
             priority = list(customers)
@@ -341,8 +351,14 @@ class HybridGeneticVNSSolver:
         schedule = self.decode_chromosome(instance, repaired, apply_local_search=apply_local_search)
         return Individual(chromosome=repaired, schedule=schedule, fitness=self.evaluate_fitness(instance, schedule))
 
-    def _chromosome_from_priority(self, instance: Instance, priority: list[str]) -> Chromosome:
-        day_gene = {customer: earliest_available_day(instance, customer) or SUNDAY for customer in instance.customer_ids()}
+    def _chromosome_from_priority(self, instance: Instance, priority: list[str], day_strategy: str = "earliest") -> Chromosome:
+        if day_strategy == "latest":
+            day_gene = {
+                customer: (max(available_days(instance, customer)) if available_days(instance, customer) else SUNDAY)
+                for customer in instance.customer_ids()
+            }
+        else:
+            day_gene = {customer: earliest_available_day(instance, customer) or SUNDAY for customer in instance.customer_ids()}
         return Chromosome(day_gene=day_gene, priority_gene=priority)
 
     def _effective_day_limit(self) -> int:

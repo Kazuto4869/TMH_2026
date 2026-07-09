@@ -89,6 +89,14 @@ def test_seed_population_contains_multiple_sources() -> None:
     assert len({tuple(seed.priority_gene) for seed in seeds}) > 1
 
 
+def test_seed_population_includes_latest_day_assignment() -> None:
+    instance = small_instance()
+
+    seeds = HybridGeneticVNSSolver(population_size=7, generations=1).create_initial_population(instance)
+
+    assert any(seed.day_gene["C"] == 3 for seed in seeds)
+
+
 def test_hybrid_genetic_vns_uses_local_search_when_enabled() -> None:
     instance = small_instance()
 
@@ -99,4 +107,3 @@ def test_hybrid_genetic_vns_uses_local_search_when_enabled() -> None:
 
 def test_model_factory_can_create_hybrid_genetic_vns() -> None:
     assert create_solver("hybrid_genetic_vns").name == "hybrid_genetic_vns"
-

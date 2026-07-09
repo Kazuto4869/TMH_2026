@@ -131,11 +131,46 @@ Codebase hiện đăng ký các solver sau:
 | `inferior_insertion_ls` | `inferior_insertion` cộng local search/post-fill nội ngày. |
 | `regret_dispatch` | Dispatch/defer regret insertion heuristic, ưu tiên khách có defer risk và insertion regret cao. |
 | `regret_dispatch_ls` | `regret_dispatch` cộng local search/post-fill nội ngày. |
-| `hybrid_genetic_vns` | Population-based hybrid genetic heuristic với insertion repair và VNS/local-search improvement. |
+| `hybrid_genetic_vns` | Population-based hybrid genetic heuristic với insertion repair, earliest/latest-day seed population và VNS/local-search improvement. |
 | `cp_full_week` | Mô hình CP-SAT toàn tuần, dùng biến giao/ngày/window/cung và `AddCircuit`; phù hợp để minh họa mô hình hoặc chạy quy mô nhỏ. |
 | `cp_rolling` | CP-SAT rolling horizon theo từng ngày; thực tế hơn cho dữ liệu lớn, có giới hạn candidate mỗi ngày. |
 
 Tất cả solver trả về `WeeklySchedule`. Việc validate feasibility và tính metrics được làm tập trung trong `evaluator.py`, giúp so sánh solver nhất quán.
+
+Xem thêm [MODEL_EXPLANATIONS.md](MODEL_EXPLANATIONS.md) để đọc giải thích chi tiết về mô hình toán, cách hoạt động và ý nghĩa của từng solver.
+
+### Cách hiểu từng solver
+
+- `nearest`: baseline tham lam đơn giản. Mỗi ngày bắt đầu từ depot, solver thử giao khách khả thi gần nhất tiếp theo. Model này nhanh và dễ kiểm tra dữ liệu, nhưng thường bỏ sót nhiều khách vì chỉ nhìn khoảng cách cục bộ.
+- `deadline`: baseline tham lam theo deadline. Solver ưu tiên khách có `time_window.end_minute` sớm nhất trong ngày. Model này tốt hơn `nearest` khi window hẹp/sớm là nguyên nhân chính gây infeasible, nhưng vẫn có thể tạo route dài hoặc bỏ sót khách do không xét deferral toàn tuần đủ mạnh.
+- `min_deferral`: heuristic insertion ưu tiên giảm số ngày bị dời. Solver cố giao khách vào ngày sớm khả dụng, dùng evaluator để kiểm tra insertion khả thi, rồi post-fill thêm khách còn chèn được. Đây là baseline thực dụng mạnh cho mục tiêu `incomplete_count` và `total_deferral_days`.
+- `inferior_insertion`: heuristic "khách khó trước". Khách được xem là khó nếu đang ở last available day, còn ít ngày khả dụng, window hẹp, deadline sớm hoặc bị cô lập về không gian. Mục tiêu là giữ slot cho các khách dễ mất cơ hội giao.
+- `inferior_insertion_ls`: giống `inferior_insertion`, sau đó chạy local search/post-fill nội ngày để cải thiện thứ tự route và thêm khách còn chèn được. Thường tốt hơn bản không `_ls`, đổi lại runtime cao hơn.
+- `regret_dispatch`: heuristic dispatch/defer. Mỗi bước so sánh rủi ro nếu hoãn khách sang ngày sau với chi phí chèn khách vào route hôm nay. Khách có defer risk cao hoặc chỉ có ít vị trí chèn tốt sẽ được ưu tiên.
+- `regret_dispatch_ls`: giống `regret_dispatch`, có thêm local search/post-fill. Đây là lựa chọn heuristic cân bằng tốt khi muốn giao đủ khách nhưng vẫn giữ deferral/distance hợp lý.
+- `hybrid_genetic_vns`: heuristic quần thể. Solver tạo nhiều chromosome ban đầu, mỗi chromosome gồm `day_gene` cho biết khách dự kiến giao ngày nào và `priority_gene` cho biết thứ tự ưu tiên toàn tuần. Sau đó decode bằng feasible insertion, có thể lai ghép/đột biến qua nhiều generation, rồi dùng local search/VNS để repair/cải thiện. Model này không chứng minh tối ưu; chất lượng phụ thuộc seed, population, generations và time limit.
+- `cp_full_week`: mô hình CP-SAT toàn tuần. Model này gần với mô hình toán học nhất, nhưng chỉ phù hợp quy mô nhỏ vì số biến/cung tăng nhanh khi đưa cả tuần vào một model.
+- `cp_rolling`: CP-SAT rolling horizon. Solver giải từng ngày một bằng `AddCircuit`, time-window variables, optional interval/`NoOverlap` strengthening và candidate filtering. Model này giữ cấu trúc CP thuần, không dùng heuristic fallback, nhưng vì rolling từng ngày nên không chứng minh tối ưu toàn tuần.
+
+### Tham số `hybrid_genetic_vns`
+
+- `--ga-population-size 30`: mỗi generation giữ tối đa 30 nghiệm ứng viên. Population lớn hơn giúp đa dạng nghiệm hơn, nhưng decode/evaluate nhiều hơn nên chạy lâu hơn.
+- `--ga-generations 0`: chỉ dùng seed population ban đầu rồi chọn nghiệm tốt nhất sau insertion repair/local search. Đây không phải là "không chạy solver"; solver vẫn tạo 30 nghiệm seed, decode từng nghiệm, chấm điểm và export nghiệm tốt nhất. Với dữ liệu hiện tại, seed mới đã đủ giao `300/300`, nên `generations=0` là profile nhanh và ổn định để lấy nghiệm feasible.
+- `--ga-generations 20` hoặc `50`: chạy thêm các vòng lai ghép và đột biến sau seed population. Dùng khi muốn thử giảm distance/deferral thêm, nhưng runtime tăng và không đảm bảo tốt hơn nếu time limit quá thấp.
+- `--ga-time-limit-sec`: giới hạn thời gian tổng cho GA. Nếu hết giờ giữa chừng, solver trả nghiệm tốt nhất đã tìm được.
+- `--local-search-time-limit-sec`: thời gian cải thiện route cho local search/VNS ở mỗi decode cuối. Tăng giá trị này có thể giúp route tốt hơn nhưng runtime tăng rõ.
+
+Gợi ý chạy genetic hiện tại:
+
+```bash
+python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time_windows.csv --solver hybrid_genetic_vns --ga-population-size 30 --ga-generations 0 --ga-time-limit-sec 120 --save-results
+```
+
+Nếu muốn thử tối ưu thêm sau khi đã có nghiệm giao đủ:
+
+```bash
+python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time_windows.csv --solver hybrid_genetic_vns --ga-population-size 30 --ga-generations 20 --ga-time-limit-sec 300 --save-results
+```
 
 Ghi chú CP:
 
@@ -212,7 +247,7 @@ python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time
 python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time_windows.csv --solver deadline
 python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time_windows.csv --solver min_deferral
 python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time_windows.csv --solver regret_dispatch_ls --save-results
-python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time_windows.csv --solver hybrid_genetic_vns --ga-population-size 30 --ga-generations 50 --ga-time-limit-sec 180 --save-results
+python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time_windows.csv --solver hybrid_genetic_vns --ga-population-size 30 --ga-generations 0 --ga-time-limit-sec 120 --save-results
 python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time_windows.csv --solver cp_full_week --cp-max-customers 40 --cp-time-limit-sec 60
 python -m vrp_weekly.cli --locations data/locations.csv --time-windows data/time_windows.csv --solver cp_rolling --cp-max-candidates-per-day 80 --cp-time-limit-per-day-sec 10 --cp-two-phase-objective --cp-candidate-strategy hybrid
 ```
