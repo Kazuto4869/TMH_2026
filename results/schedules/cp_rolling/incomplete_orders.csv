@@ -1,16 +1,2 @@
 customer_id,customer_name,demand_kg,available_days
-C040,Khach_Hang_040,2.7,1 2
-C076,Khach_Hang_076,1.6,1 2 3 4 5
-C085,Khach_Hang_085,1.0,1 2
-C091,Khach_Hang_091,2.4,2 3 4 5
-C098,Khach_Hang_098,1.6,1 5
-C131,Khach_Hang_131,0.8,2 3 5
-C151,Khach_Hang_151,3.0,1 2 3
-C154,Khach_Hang_154,1.0,1 3
-C162,Khach_Hang_162,3.6,2 3
-C163,Khach_Hang_163,3.7,2 4 5
-C170,Khach_Hang_170,1.6,2 5
-C180,Khach_Hang_180,2.5,1 5
-C250,Khach_Hang_250,3.2,3 4 5
-C269,Khach_Hang_269,2.5,2 3
-C287,Khach_Hang_287,3.9,2 3 4 5
+C083,Khach_Hang_083,1.3,4 5

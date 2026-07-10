@@ -51,20 +51,26 @@ def main() -> int:
     _ensure_result_dirs(results_dir, available_models)
     selected_models = _prompt_models(available_models)
     has_cp_full_week = "cp_full_week" in selected_models
-    has_cp_rolling = "cp_rolling" in selected_models
+    has_cp_rolling = "cp_rolling" in selected_models or "cp_rolling_repair" in selected_models
+    has_cp_repair = "cp_rolling_repair" in selected_models
     has_cp_model = has_cp_full_week or has_cp_rolling
     cp_time_limit_sec = 60
-    cp_time_limit_per_day_sec = 10
+    cp_time_limit_per_day_sec = 60
     cp_max_customers: int | None = None
-    cp_max_candidates_per_day: int | None = None
-    cp_threads = 8
+    cp_max_candidates_per_day: int | None = 80
+    cp_threads = 4
     cp_log_search = False
     cp_two_phase_objective = True
     cp_random_seed = 1
     cp_use_decision_strategy = True
-    cp_use_service_no_overlap = False
+    cp_use_service_no_overlap = True
     cp_candidate_strategy = "hybrid"
     cp_solve_phase2 = True
+    cp_adaptive_daily_deadline = True
+    cp_optimization_mode = "full_three_stage"
+    cp_stage2_max_time_fraction = 0.10
+    repair_time_limit_sec = 300
+    repair_max_days = 2
     heuristic_max_candidates_per_day: int | None = None
     heuristic_random_seed = 1
     heuristic_use_local_search = False
@@ -81,10 +87,13 @@ def main() -> int:
         cp_time_limit_sec = _prompt_int("Full-week CP time limit in seconds", 60, minimum=1)
         cp_max_customers = _prompt_optional_int("Full-week CP max customers", default=40, minimum=1)
     if has_cp_rolling:
-        cp_time_limit_per_day_sec = _prompt_int("Rolling CP time limit per day in seconds", 10, minimum=1)
+        cp_time_limit_per_day_sec = _prompt_int("Rolling CP time limit per day in seconds", 60, minimum=1)
         cp_max_candidates_per_day = _prompt_optional_int("Rolling CP max candidates per day", default=80, minimum=1)
     if has_cp_model:
-        cp_threads = _prompt_int("CP workers", 8, minimum=1)
+        cp_threads = _prompt_int("CP workers", 4, minimum=1)
+    if has_cp_repair:
+        repair_time_limit_sec = _prompt_int("Repair total time limit in seconds", 300, minimum=1)
+        repair_max_days = _prompt_int("Repair maximum days", 2, minimum=1)
     if any(model_name in {"inferior_insertion", "inferior_insertion_ls", "regret_dispatch", "regret_dispatch_ls"} for model_name in selected_models):
         heuristic_max_candidates_per_day = _prompt_optional_int("Heuristic max candidates per day", default=0, minimum=1)
         if heuristic_max_candidates_per_day == 0:
@@ -121,8 +130,19 @@ def main() -> int:
             cp_random_seed=cp_random_seed,
             cp_use_decision_strategy=cp_use_decision_strategy,
             cp_use_service_no_overlap=cp_use_service_no_overlap,
+            cp_use_route_interval_no_overlap=True,
             cp_candidate_strategy=cp_candidate_strategy,
             cp_solve_phase2=cp_solve_phase2,
+            cp_adaptive_daily_deadline=cp_adaptive_daily_deadline,
+            cp_optimization_mode=cp_optimization_mode,
+            cp_stage2_max_time_fraction=cp_stage2_max_time_fraction,
+            cp_repair_time_limit_sec=repair_time_limit_sec,
+            cp_repair_max_days=repair_max_days,
+            cp_repair_max_customers=120,
+            cp_repair_random_seed=1,
+            cp_repair_workers=4,
+            cp_repair_use_decision_strategy=True,
+            cp_repair_optimize_route_cost=True,
             heuristic_max_candidates_per_day=heuristic_max_candidates_per_day,
             heuristic_random_seed=heuristic_random_seed,
             heuristic_use_local_search=heuristic_use_local_search,
@@ -155,10 +175,11 @@ def main() -> int:
         save_result_json(result_path, model.name, schedule, metrics)
         export_report_files(results_dir, model.name, instance, schedule, metrics)
         run_log_path = output_dir / f"run_log_{model.name}_{run_timestamp}.csv"
-        if model.name == "cp_rolling":
+        if model.name in {"cp_rolling", "cp_rolling_repair"}:
             save_run_log_csv(
                 run_log_path,
                 _build_rolling_run_log_rows(
+                    model_name=model.name,
                     timestamp=run_timestamp,
                     runtime_sec=runtime_sec,
                     solver_status=solver_status,
@@ -188,8 +209,8 @@ def main() -> int:
                     cp_time_limit_per_day_sec="",
                     cp_max_customers=cp_max_customers if model.name == "cp_full_week" else "",
                     cp_max_candidates_per_day="",
-                    cp_threads=cp_threads if model.name in ("cp_full_week", "cp_rolling") else "",
-                    cp_log_search=cp_log_search if model.name in ("cp_full_week", "cp_rolling") else "",
+                    cp_threads=cp_threads if model.name in ("cp_full_week", "cp_rolling", "cp_rolling_repair") else "",
+                    cp_log_search=cp_log_search if model.name in ("cp_full_week", "cp_rolling", "cp_rolling_repair") else "",
                 ),
             )
         print(f"saved_results={model.name}", flush=True)
@@ -347,6 +368,7 @@ def _build_run_log_row(
 
 
 def _build_rolling_run_log_rows(
+    model_name: str,
     timestamp: str,
     runtime_sec: float,
     solver_status: dict[str, object],
@@ -373,7 +395,7 @@ def _build_rolling_run_log_rows(
             rows.append(
                 {
                     "timestamp": timestamp,
-                    "model": "cp_rolling",
+                    "model": model_name,
                     "row_type": "DAY",
                     "day": day,
                     "runtime_sec": f"{float(day_status.get('runtime_sec', 0.0)):.6f}",
@@ -431,7 +453,7 @@ def _build_rolling_run_log_rows(
             )
 
     summary_row = _build_run_log_row(
-        model_name="cp_rolling",
+        model_name=model_name,
         timestamp=timestamp,
         runtime_sec=runtime_sec,
         solver_status=solver_status,
@@ -445,6 +467,8 @@ def _build_rolling_run_log_rows(
     )
     summary_row["row_type"] = "SUMMARY"
     summary_row["day"] = "SUMMARY"
+    summary_row["objective"] = metrics.get("objective_value", "")
+    summary_row["best_bound"] = ""
     summary_row["complete_count"] = metrics.get("delivered_count", "")
     summary_row["carried_over_count"] = metrics.get("incomplete_count", "")
     summary_row["cp_two_phase_objective"] = cp_two_phase_objective

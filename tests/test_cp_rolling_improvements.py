@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 from ortools.sat.python import cp_model
 
+from vrp_weekly.cli import build_parser
 from vrp_weekly.core import Instance, Location, TimeWindow
 from vrp_weekly.evaluator import evaluate_weekly_schedule
 from vrp_weekly.models.cp_full_week import FullWeekCPSATSolver
@@ -255,6 +256,25 @@ def test_cp_rolling_still_hard_feasible() -> None:
 
     assert metrics.hard_feasible
     assert metrics.incomplete_count == 0
+
+
+def test_small_weekly_schedule_hard_feasible() -> None:
+    instance = make_instance(
+        {
+            "A": (1.0, 0.0),
+            "B": (2.0, 0.0),
+            "C": (3.0, 0.0),
+        },
+        {
+            "A": [(1, 480, 700), (2, 480, 700)],
+            "B": [(1, 500, 800), (3, 500, 800)],
+            "C": [(2, 480, 760), (4, 480, 760)],
+        },
+    )
+
+    schedule = RollingHorizonCPSATSolver(time_limit_per_day_sec=2, num_workers=1).solve(instance)
+
+    assert evaluate_weekly_schedule(instance, schedule).hard_feasible
 
 
 def test_cp_rolling_has_no_fallback_constructor_args() -> None:
@@ -553,6 +573,22 @@ def test_two_phase_runs_without_heuristic() -> None:
 
     schedule = RollingHorizonCPSATSolver(time_limit_per_day_sec=2, num_workers=1).solve(instance)
 
+    assert schedule.solver_status["day_statuses"][1]["objective_mode"] == "adaptive_three_stage"
+    assert evaluate_weekly_schedule(instance, schedule).hard_feasible
+
+
+def test_fixed_phase_split_still_available() -> None:
+    instance = make_instance(
+        {"A": (1.0, 0.0), "B": (2.0, 0.0)},
+        {"A": [(1, 480, 700)], "B": [(1, 500, 800)]},
+    )
+
+    schedule = RollingHorizonCPSATSolver(
+        time_limit_per_day_sec=2,
+        num_workers=1,
+        adaptive_daily_deadline=False,
+    ).solve(instance)
+
     assert schedule.solver_status["day_statuses"][1]["objective_mode"] == "two_phase"
     assert evaluate_weekly_schedule(instance, schedule).hard_feasible
 
@@ -567,6 +603,204 @@ def test_phase1_maximizes_delivered_count() -> None:
     day_status = schedule.solver_status["day_statuses"][1]
 
     assert day_status["phase1_delivered_count"] == 2
+
+
+def test_phase1_prioritizes_mandatory_over_flexible() -> None:
+    instance = make_instance(
+        {"MANDATORY": (0.0, 0.0), "FLEX": (0.0, 0.0)},
+        {
+            "MANDATORY": [(1, 480, 485)],
+            "FLEX": [(1, 480, 485), (2, 480, 700)],
+        },
+    )
+
+    schedule = RollingHorizonCPSATSolver(time_limit_per_day_sec=2, num_workers=1, solve_phase2=False).solve(instance)
+    delivered_day1 = schedule.routes[1].delivered_customer_ids()
+    day_status = schedule.solver_status["day_statuses"][1]
+
+    assert "MANDATORY" in delivered_day1
+    assert "FLEX" not in delivered_day1
+    assert day_status["phase1_mandatory_delivered_count"] == 1
+    assert day_status["phase1_total_delivered_count"] == 1
+
+
+def test_mandatory_multiplier_is_lexicographically_safe() -> None:
+    candidates = ["M", "F1", "F2", "F3"]
+    multiplier = len(candidates) + 1
+
+    one_more_mandatory = multiplier * 1 + 1
+    all_flexible_difference = multiplier * 0 + len(candidates)
+
+    assert one_more_mandatory > all_flexible_difference
+
+
+def test_phase2_fixes_mandatory_count() -> None:
+    instance = make_instance(
+        {"MANDATORY": (0.0, 0.0), "FLEX": (0.0, 0.0)},
+        {
+            "MANDATORY": [(1, 480, 485)],
+            "FLEX": [(1, 480, 485), (2, 480, 700)],
+        },
+    )
+    solver = RollingHorizonCPSATSolver(num_workers=1)
+    precomputed = solver._precompute_day(instance, 1, ["MANDATORY", "FLEX"])
+    data = solver._build_day_model(instance, 1, ["MANDATORY", "FLEX"], precomputed=precomputed)
+    solver._add_phase2_count_constraints(data, mandatory_delivered_count=1, total_delivered_count=1)
+    data.model.Add(data.y["MANDATORY"] == 0)
+    cp_solver = cp_model.CpSolver()
+
+    status = cp_solver.Solve(data.model)
+
+    assert status == cp_model.INFEASIBLE
+
+
+def test_phase2_fixes_total_delivered_count() -> None:
+    instance = make_instance(
+        {"A": (0.0, 0.0), "B": (0.0, 0.0)},
+        {"A": [(1, 480, 700)], "B": [(1, 480, 700)]},
+    )
+    solver = RollingHorizonCPSATSolver(num_workers=1)
+    precomputed = solver._precompute_day(instance, 1, ["A", "B"])
+    data = solver._build_day_model(instance, 1, ["A", "B"], precomputed=precomputed)
+    solver._add_phase2_count_constraints(data, mandatory_delivered_count=0, total_delivered_count=1)
+    data.model.Add(data.y["A"] == 1)
+    data.model.Add(data.y["B"] == 1)
+    cp_solver = cp_model.CpSolver()
+
+    status = cp_solver.Solve(data.model)
+
+    assert status == cp_model.INFEASIBLE
+
+
+def test_phase2_receives_phase1_cp_hint() -> None:
+    instance = make_instance(
+        {"A": (1.0, 0.0), "B": (2.0, 0.0)},
+        {"A": [(1, 480, 700)], "B": [(1, 500, 800)]},
+    )
+
+    schedule = RollingHorizonCPSATSolver(time_limit_per_day_sec=2, num_workers=1).solve(instance)
+    day_status = schedule.solver_status["day_statuses"][1]
+
+    assert day_status["phase2_hint_enabled"] is True
+    assert day_status["phase2_hint_y_count"] == 2
+    assert day_status["phase2_hint_x_count"] == 9
+    assert day_status["phase2_hint_g_count"] == 2
+
+
+def test_phase2_urgency_penalty_nonnegative() -> None:
+    source = Path("src/vrp_weekly/models/cp_rolling_horizon.py").read_text(encoding="utf-8")
+
+    assert "data.precomputed.urgency[customer_id] * (1 - data.y[customer_id])" in source
+    assert "-self.urgency_weight *" not in source
+
+
+def test_daily_compatibility_precomputed_once(monkeypatch: pytest.MonkeyPatch) -> None:
+    instance = make_instance(
+        {"A": (1.0, 0.0), "B": (2.0, 0.0)},
+        {"A": [(1, 480, 700)], "B": [(1, 500, 800)]},
+    )
+    solver = RollingHorizonCPSATSolver(time_limit_per_day_sec=2, num_workers=1)
+    original = solver._precompute_day
+    call_count = 0
+
+    def wrapped_precompute(*args, **kwargs):
+        nonlocal call_count
+        call_count += 1
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(solver, "_precompute_day", wrapped_precompute)
+
+    solver.solve(instance)
+
+    assert call_count == 1
+
+
+def test_mandatory_first_decision_strategy() -> None:
+    instance = make_instance(
+        {"FLEX": (0.0, 0.0), "MANDATORY": (0.0, 0.0)},
+        {
+            "FLEX": [(1, 480, 700), (2, 480, 700)],
+            "MANDATORY": [(1, 480, 700)],
+        },
+    )
+    solver = RollingHorizonCPSATSolver(num_workers=1)
+    data = solver._build_day_model(instance, 1, ["FLEX", "MANDATORY"])
+
+    assert data.decision_strategy_customer_order[:1] == ["MANDATORY"]
+
+
+def test_status_reports_mandatory_counts() -> None:
+    instance = make_instance(
+        {"MANDATORY": (0.0, 0.0), "FLEX": (0.0, 0.0)},
+        {
+            "MANDATORY": [(1, 480, 700)],
+            "FLEX": [(1, 480, 700), (2, 480, 700)],
+        },
+    )
+
+    schedule = RollingHorizonCPSATSolver(time_limit_per_day_sec=2, num_workers=1).solve(instance)
+    day_status = schedule.solver_status["day_statuses"][1]
+
+    assert day_status["mandatory_candidate_count"] == 1
+    assert day_status["mandatory_delivered_count"] == 1
+    assert day_status["mandatory_unserved_count"] == 0
+    assert day_status["all_mandatory_served"] is True
+
+
+def test_adaptive_stage_statuses_present_and_certifies_all_mandatory_served() -> None:
+    instance = make_instance(
+        {"MANDATORY": (0.0, 0.0), "FLEX": (0.0, 0.0)},
+        {
+            "MANDATORY": [(1, 480, 700)],
+            "FLEX": [(1, 480, 700), (2, 480, 700)],
+        },
+    )
+
+    schedule = RollingHorizonCPSATSolver(time_limit_per_day_sec=2, num_workers=1).solve(instance)
+    day_status = schedule.solver_status["day_statuses"][1]
+
+    assert day_status["adaptive_daily_deadline"] is True
+    assert day_status["stage1a_status"] in {"OPTIMAL", "FEASIBLE"}
+    assert day_status["stage1b_status"] in {"OPTIMAL", "FEASIBLE"}
+    assert "stage2_status" in day_status
+    assert day_status["mandatory_candidate_count"] == 1
+    assert day_status["mandatory_delivered_count"] == 1
+    assert day_status["all_mandatory_served"] is True
+    assert day_status["mandatory_count_certified"] is True
+    assert day_status["total_delivered_count"] >= 1
+    assert "unused_daily_budget_sec" in day_status
+
+
+def test_timing_diagnostics_present() -> None:
+    instance = make_instance({"A": (1.0, 0.0)}, {"A": [(1, 480, 700)]})
+
+    schedule = RollingHorizonCPSATSolver(time_limit_per_day_sec=2, num_workers=1).solve(instance)
+    day_status = schedule.solver_status["day_statuses"][1]
+
+    for key in (
+        "daily_precompute_time_sec",
+        "phase1_model_build_time_sec",
+        "phase1_solve_time_sec",
+        "phase2_model_build_time_sec",
+        "phase2_solve_time_sec",
+        "stage1a_solve_time_sec",
+        "stage1b_solve_time_sec",
+        "stage2_solve_time_sec",
+        "unused_daily_budget_sec",
+        "daily_total_runtime_sec",
+    ):
+        assert key in day_status
+        assert day_status[key] != ""
+
+
+def test_cp_rolling_remains_pure_cp() -> None:
+    source = Path("src/vrp_weekly/models/cp_rolling_horizon.py").read_text(encoding="utf-8")
+
+    assert "min_deferral" not in source
+    assert "regret" not in source
+    assert "nearest" not in source
+    assert "fallback" not in source
+    assert "AddCircuit" in source
 
 
 def test_phase2_fixes_delivered_count() -> None:
@@ -616,8 +850,60 @@ def test_phase1_only_runs() -> None:
 
     assert day_status["phase1_only"] is True
     assert day_status["solve_phase2"] is False
-    assert day_status["phase2_status"] == ""
+    assert day_status["optimization_mode"] == "service_phases_only"
+    assert day_status["stage1b_ran"] is True
+    assert day_status["phase2_status"] == "SKIPPED"
+    assert day_status["stage2_skipped_reason"] == "optimization_mode_service_phases_only"
     assert evaluate_weekly_schedule(instance, schedule).hard_feasible
+
+
+def test_mandatory_stage_only_skips_service_and_route_stages() -> None:
+    instance = make_instance(
+        {"MANDATORY": (1.0, 0.0), "FLEX": (2.0, 0.0)},
+        {
+            "MANDATORY": [(1, 480, 700)],
+            "FLEX": [(1, 500, 800), (2, 500, 800)],
+        },
+    )
+
+    schedule = RollingHorizonCPSATSolver(
+        time_limit_per_day_sec=2,
+        num_workers=1,
+        optimization_mode="mandatory_stage_only",
+    ).solve(instance)
+    day_status = schedule.solver_status["day_statuses"][1]
+
+    assert day_status["optimization_mode"] == "mandatory_stage_only"
+    assert day_status["stage1a_ran"] is True
+    assert day_status["stage1b_ran"] is False
+    assert day_status["stage2_ran"] is False
+    assert day_status["stage1b_skipped_reason"] == "optimization_mode_mandatory_stage_only"
+    assert day_status["stage2_skipped_reason"] == "optimization_mode_mandatory_stage_only"
+
+
+def test_stage2_time_cap_status_present() -> None:
+    instance = make_instance(
+        {"A": (1.0, 0.0), "B": (2.0, 0.0)},
+        {"A": [(1, 480, 700)], "B": [(1, 500, 800)]},
+    )
+
+    schedule = RollingHorizonCPSATSolver(
+        time_limit_per_day_sec=2,
+        num_workers=1,
+        stage2_max_time_fraction=0.10,
+    ).solve(instance)
+
+    assert schedule.solver_status["day_statuses"][1]["stage2_max_time_fraction"] == 0.10
+
+
+def test_cli_adaptive_optimization_mode_flags() -> None:
+    parser = build_parser()
+    base_args = ["--locations", "data/locations.csv", "--time-windows", "data/time_windows.csv"]
+
+    assert parser.parse_args([*base_args, "--cp-three-stage"]).cp_optimization_mode == "full_three_stage"
+    assert parser.parse_args([*base_args, "--cp-service-phases-only"]).cp_optimization_mode == "service_phases_only"
+    assert parser.parse_args([*base_args, "--cp-mandatory-stage-only"]).cp_optimization_mode == "mandatory_stage_only"
+    assert parser.parse_args([*base_args, "--cp-phase1-only"]).cp_optimization_mode == "service_phases_only"
 
 
 def test_decision_strategy_can_be_disabled() -> None:

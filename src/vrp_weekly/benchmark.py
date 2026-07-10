@@ -122,6 +122,7 @@ def run_benchmark(
     frame = BenchmarkTable(rows)
     summary_path = comparison_dir / "benchmark_summary.csv"
     frame.to_csv(summary_path)
+    (comparison_dir / "comparison_table.txt").write_text(frame.to_string(index=False), encoding="utf-8")
     if export_report:
         export_benchmark_plots(summary_path, comparison_dir)
     return frame
@@ -236,22 +237,54 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--ga-crossover-rate", type=float, default=0.80, help="Hybrid genetic VNS crossover probability.")
     parser.add_argument("--ga-time-limit-sec", type=int, default=120, help="Hybrid genetic VNS time limit in seconds.")
     parser.add_argument("--cp-time-limit-sec", type=int, default=60, help="Full-week CP-SAT time limit in seconds.")
-    parser.add_argument("--cp-time-limit-per-day-sec", type=int, default=10, help="Rolling CP-SAT time limit per day.")
+    parser.add_argument("--cp-time-limit-per-day-sec", type=int, default=60, help="Rolling CP-SAT time limit per day.")
     parser.add_argument("--cp-time-limit-per-day", type=int, default=None, help="Deprecated alias for --cp-time-limit-per-day-sec.")
     parser.add_argument("--cp-max-customers", type=int, default=40, help="Limit customers for full-week CP-SAT.")
-    parser.add_argument("--cp-max-candidates-per-day", type=int, default=None, help="Limit daily candidates for rolling CP-SAT.")
-    parser.add_argument("--cp-workers", type=int, default=8, help="CP-SAT worker count.")
+    parser.add_argument("--cp-max-candidates-per-day", type=int, default=80, help="Limit daily candidates for rolling CP-SAT.")
+    parser.add_argument("--cp-workers", type=int, default=4, help="CP-SAT worker count.")
     parser.add_argument("--cp-log-search", action="store_true", help="Print CP-SAT search logs.")
     parser.add_argument("--cp-two-phase-objective", dest="cp_two_phase_objective", action="store_true", default=True, help="Use pure two-phase rolling CP objective.")
     parser.add_argument("--cp-single-phase-objective", dest="cp_two_phase_objective", action="store_false", help="Use pure single-phase rolling CP objective.")
+    parser.add_argument("--cp-phase1-time-fraction", type=float, default=0.85, help="Rolling CP daily budget fraction for phase 1.")
+    parser.add_argument("--cp-phase2-time-fraction", type=float, default=0.15, help="Rolling CP daily budget fraction for phase 2.")
+    parser.add_argument("--cp-adaptive-daily-deadline", dest="cp_adaptive_daily_deadline", action="store_true", default=True, help="Use one shared adaptive daily wall-clock deadline.")
+    parser.add_argument("--cp-fixed-phase-split", dest="cp_adaptive_daily_deadline", action="store_false", help="Use the backward-compatible fixed phase split.")
+    parser.add_argument("--cp-three-stage", dest="cp_optimization_mode", action="store_const", const="full_three_stage", default="full_three_stage", help="Run Stage 1A, Stage 1B, and Stage 2.")
+    parser.add_argument("--cp-service-phases-only", dest="cp_optimization_mode", action="store_const", const="service_phases_only", help="Run Stage 1A and Stage 1B only.")
+    parser.add_argument("--cp-mandatory-stage-only", dest="cp_optimization_mode", action="store_const", const="mandatory_stage_only", help="Run only Stage 1A mandatory-count diagnostics.")
+    parser.add_argument("--cp-stage2-max-time-fraction", type=float, default=0.10, help="Maximum fraction of the daily budget available to Stage 2.")
     parser.add_argument("--cp-random-seed", type=int, default=1, help="CP-SAT random seed.")
     parser.add_argument("--cp-use-decision-strategy", dest="cp_use_decision_strategy", action="store_true", default=True, help="Add an optional y-first CP decision strategy.")
     parser.add_argument("--cp-no-decision-strategy", dest="cp_use_decision_strategy", action="store_false", help="Disable the optional CP decision strategy.")
-    parser.add_argument("--cp-use-service-no-overlap", dest="cp_use_service_no_overlap", action="store_true", default=False, help="Add optional service intervals and NoOverlap.")
+    parser.add_argument("--cp-use-service-no-overlap", dest="cp_use_service_no_overlap", action="store_true", default=True, help="Add optional service intervals and NoOverlap.")
     parser.add_argument("--cp-no-service-no-overlap", dest="cp_use_service_no_overlap", action="store_false", help="Disable service NoOverlap intervals.")
+    parser.add_argument("--cp-use-route-interval-no-overlap", dest="cp_use_route_interval_no_overlap", action="store_true", default=True, help="Add optional route interval NoOverlap strengthening.")
+    parser.add_argument("--cp-no-route-interval-no-overlap", dest="cp_use_route_interval_no_overlap", action="store_false", help="Disable route interval NoOverlap strengthening.")
+    parser.add_argument("--cp-use-window-pair-cuts", dest="cp_use_window_pair_cuts", action="store_true", default=True, help="Enable window-pair cuts.")
+    parser.add_argument("--cp-no-window-pair-cuts", dest="cp_use_window_pair_cuts", action="store_false", help="Disable window-pair cuts.")
+    parser.add_argument("--cp-use-precedence-cuts", dest="cp_use_precedence_cuts", action="store_true", default=True, help="Enable precedence cuts.")
+    parser.add_argument("--cp-no-precedence-cuts", dest="cp_use_precedence_cuts", action="store_false", help="Disable precedence cuts.")
+    parser.add_argument("--cp-use-pair-conflict-cuts", dest="cp_use_pair_conflict_cuts", action="store_true", default=True, help="Enable pair-conflict cuts.")
+    parser.add_argument("--cp-no-pair-conflict-cuts", dest="cp_use_pair_conflict_cuts", action="store_false", help="Disable pair-conflict cuts.")
+    parser.add_argument("--cp-use-depot-window-cuts", dest="cp_use_depot_window_cuts", action="store_true", default=True, help="Enable depot-window cuts.")
+    parser.add_argument("--cp-no-depot-window-cuts", dest="cp_use_depot_window_cuts", action="store_false", help="Disable depot-window cuts.")
+    parser.add_argument("--cp-use-dominated-window-cuts", dest="cp_use_dominated_window_cuts", action="store_true", default=True, help="Enable dominated-window cuts.")
+    parser.add_argument("--cp-no-dominated-window-cuts", dest="cp_use_dominated_window_cuts", action="store_false", help="Disable dominated-window cuts.")
     parser.add_argument("--cp-candidate-strategy", choices=["urgent", "hybrid"], default="hybrid", help="Daily candidate filtering strategy for rolling CP.")
-    parser.add_argument("--cp-phase1-only", dest="cp_solve_phase2", action="store_false", default=True, help="Run only phase 1 delivered-count CP for diagnostics.")
-    parser.add_argument("--cp-solve-phase2", dest="cp_solve_phase2", action="store_true", help="Run phase 2 route-cost CP after phase 1.")
+    parser.add_argument("--cp-phase1-only", dest="cp_optimization_mode", action="store_const", const="service_phases_only", help="Deprecated alias for --cp-service-phases-only.")
+    parser.add_argument("--cp-solve-phase2", dest="cp_optimization_mode", action="store_const", const="full_three_stage", help="Deprecated alias for --cp-three-stage.")
+    parser.add_argument("--cp-run-incomplete-diagnostics", dest="cp_run_incomplete_diagnostics", action="store_true", default=False, help="Run optional no-cap last-day incomplete diagnostics.")
+    parser.add_argument("--cp-no-incomplete-diagnostics", dest="cp_run_incomplete_diagnostics", action="store_false", help="Disable optional no-cap last-day incomplete diagnostics.")
+    parser.add_argument("--cp-incomplete-diagnostic-time-limit-sec", type=int, default=60, help="Time limit for each incomplete last-day diagnostic solve.")
+    parser.add_argument("--cp-repair-time-limit-sec", type=int, default=300, help="CP rolling repair total time limit.")
+    parser.add_argument("--cp-repair-max-days", type=int, default=2, help="Maximum selected days in CP rolling repair.")
+    parser.add_argument("--cp-repair-max-customers", type=int, default=120, help="Maximum customers in CP rolling repair.")
+    parser.add_argument("--cp-repair-random-seed", type=int, default=1, help="CP rolling repair random seed.")
+    parser.add_argument("--cp-repair-workers", type=int, default=4, help="CP rolling repair worker count.")
+    parser.add_argument("--cp-repair-use-decision-strategy", dest="cp_repair_use_decision_strategy", action="store_true", default=True, help="Enable CP repair decision strategy.")
+    parser.add_argument("--cp-repair-no-decision-strategy", dest="cp_repair_use_decision_strategy", action="store_false", help="Disable CP repair decision strategy.")
+    parser.add_argument("--cp-repair-optimize-route-cost", dest="cp_repair_optimize_route_cost", action="store_true", default=True, help="Run repair route-cost stage.")
+    parser.add_argument("--cp-repair-service-only", dest="cp_repair_optimize_route_cost", action="store_false", help="Skip repair route-cost stage after service/deferral optimization.")
     parser.add_argument("--log-level", default="WARNING", help="Python logging level.")
     return parser
 
@@ -273,11 +306,31 @@ def main(argv: list[str] | None = None) -> int:
         "cp_workers": args.cp_workers,
         "cp_log_search": args.cp_log_search,
         "cp_two_phase_objective": args.cp_two_phase_objective,
+        "cp_phase1_time_fraction": args.cp_phase1_time_fraction,
+        "cp_phase2_time_fraction": args.cp_phase2_time_fraction,
+        "cp_adaptive_daily_deadline": args.cp_adaptive_daily_deadline,
+        "cp_optimization_mode": args.cp_optimization_mode,
+        "cp_stage2_max_time_fraction": args.cp_stage2_max_time_fraction,
         "cp_random_seed": args.cp_random_seed,
         "cp_use_decision_strategy": args.cp_use_decision_strategy,
         "cp_use_service_no_overlap": args.cp_use_service_no_overlap,
+        "cp_use_route_interval_no_overlap": args.cp_use_route_interval_no_overlap,
+        "cp_use_window_pair_cuts": args.cp_use_window_pair_cuts,
+        "cp_use_precedence_cuts": args.cp_use_precedence_cuts,
+        "cp_use_pair_conflict_cuts": args.cp_use_pair_conflict_cuts,
+        "cp_use_depot_window_cuts": args.cp_use_depot_window_cuts,
+        "cp_use_dominated_window_cuts": args.cp_use_dominated_window_cuts,
         "cp_candidate_strategy": args.cp_candidate_strategy,
-        "cp_solve_phase2": args.cp_solve_phase2,
+        "cp_solve_phase2": args.cp_optimization_mode == "full_three_stage",
+        "cp_run_incomplete_diagnostics": args.cp_run_incomplete_diagnostics,
+        "cp_incomplete_diagnostic_time_limit_sec": args.cp_incomplete_diagnostic_time_limit_sec,
+        "cp_repair_time_limit_sec": args.cp_repair_time_limit_sec,
+        "cp_repair_max_days": args.cp_repair_max_days,
+        "cp_repair_max_customers": args.cp_repair_max_customers,
+        "cp_repair_random_seed": args.cp_repair_random_seed,
+        "cp_repair_workers": args.cp_repair_workers,
+        "cp_repair_use_decision_strategy": args.cp_repair_use_decision_strategy,
+        "cp_repair_optimize_route_cost": args.cp_repair_optimize_route_cost,
         "heuristic_max_candidates_per_day": args.heuristic_max_candidates_per_day,
         "heuristic_random_seed": args.heuristic_random_seed,
         "heuristic_use_local_search": args.heuristic_use_local_search,
@@ -342,4 +395,3 @@ def _join_daily(day_statuses: dict[Any, Any], field: str) -> str:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

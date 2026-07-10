@@ -180,6 +180,53 @@ def export_incomplete_orders_csv(path: str | Path, instance: Instance, schedule:
             )
 
 
+def export_incomplete_diagnostics_csv(path: str | Path, schedule: WeeklySchedule) -> None:
+    """Export CP rolling incomplete-customer diagnostics when available."""
+    diagnostics = schedule.solver_status.get("incomplete_customer_diagnostics", [])
+    if not isinstance(diagnostics, list):
+        diagnostics = []
+    output_path = Path(path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    fieldnames = [
+        "customer_id",
+        "available_days",
+        "last_available_day",
+        "selected_on_last_day",
+        "mandatory_on_last_day",
+        "stage1a_value",
+        "stage1b_value",
+        "stage2_value",
+        "extracted_in_route",
+        "diagnosis_reason",
+    ]
+    with output_path.open("w", newline="", encoding="utf-8") as file_obj:
+        writer = csv.DictWriter(file_obj, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in diagnostics:
+            if not isinstance(row, dict):
+                continue
+            last_day = row.get("last_available_day", "")
+            stage1a_values = row.get("stage1a_values_by_day", {})
+            stage1b_values = row.get("stage1b_values_by_day", {})
+            stage2_values = row.get("stage2_values_by_day", {})
+            extracted_days = row.get("extracted_days", [])
+            last_day_key = str(last_day)
+            writer.writerow(
+                {
+                    "customer_id": row.get("customer_id", ""),
+                    "available_days": " ".join(str(day) for day in row.get("available_days", [])),
+                    "last_available_day": last_day,
+                    "selected_on_last_day": row.get("selected_on_last_available_day", ""),
+                    "mandatory_on_last_day": row.get("mandatory_on_last_available_day", ""),
+                    "stage1a_value": stage1a_values.get(last_day_key, "") if isinstance(stage1a_values, dict) else "",
+                    "stage1b_value": stage1b_values.get(last_day_key, "") if isinstance(stage1b_values, dict) else "",
+                    "stage2_value": stage2_values.get(last_day_key, "") if isinstance(stage2_values, dict) else "",
+                    "extracted_in_route": last_day in extracted_days if isinstance(extracted_days, list) else "",
+                    "diagnosis_reason": row.get("diagnosis_reason", ""),
+                }
+            )
+
+
 def export_result_txt(
     path: str | Path,
     solver_name: str,
@@ -282,6 +329,8 @@ def export_report_files(
     schedules_dir = solver_results_dir(results_dir, solver_name)
     export_daily_schedule_csv(schedules_dir / "daily_schedule.csv", instance, schedule)
     export_incomplete_orders_csv(schedules_dir / "incomplete_orders.csv", instance, schedule)
+    if "incomplete_customer_diagnostics" in schedule.solver_status:
+        export_incomplete_diagnostics_csv(schedules_dir / "incomplete_diagnostics.csv", schedule)
     if metrics is not None:
         export_result_txt(schedules_dir / "result.txt", solver_name, instance, schedule, metrics)
 
@@ -319,4 +368,3 @@ def _format_or_blank(minutes: int | None) -> str:
     if minutes is None:
         return ""
     return format_hhmm(minutes) if 0 <= minutes <= 1440 else str(minutes)
-

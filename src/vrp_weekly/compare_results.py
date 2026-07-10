@@ -11,6 +11,10 @@ from vrp_weekly.benchmark import BenchmarkTable
 from vrp_weekly.config import METRIC_COLUMNS, SORT_BY
 from vrp_weekly.export import export_benchmark_plots
 
+DISPLAY_NAMES = {
+    "cp_rolling_repair": "CP Rolling + Weekly Repair",
+}
+
 
 def compare_saved_results(
     results_dir: str | Path = "results",
@@ -86,6 +90,8 @@ def _row_from_result(path: Path) -> dict[str, Any]:
         "total_remaining_after_week": solver_status.get("total_remaining_after_week", ""),
         "hard_feasible": metrics["hard_feasible"],
     }
+    if row["solver"] in DISPLAY_NAMES:
+        row["solver_display_name"] = DISPLAY_NAMES[row["solver"]]
     return {column: row[column] for column in METRIC_COLUMNS}
 
 
