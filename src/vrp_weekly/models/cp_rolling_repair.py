@@ -10,12 +10,12 @@ from ortools.sat.python import cp_model
 
 from vrp_weekly.config import DAY_END_MIN, MONDAY, SUNDAY
 from vrp_weekly.core import DailyRoute, Instance, TimeWindow, WeeklySchedule
-from vrp_weekly.evaluator import evaluate_weekly_schedule
+from vrp_weekly.evaluator import evaluate_weekly_schedule, official_objective_status
 from vrp_weekly.models.cp_rolling_horizon import (
     RollingHorizonCPSATSolver,
     _build_daily_schedule_from_solution,
     _can_follow,
-    _distance_scaled,
+    _distance_objective_cost,
     _extract_route_from_arcs,
     _get_service_time,
     _travel_time_minutes,
@@ -196,17 +196,11 @@ class RollingHorizonCPRepairSolver:
             self._add_decision_strategy(r3_data)
             r3_start = time.perf_counter()
             distance_terms = [
-                _distance_scaled(instance, i, j) * var
+                _distance_objective_cost(instance, i, j, 10) * var
                 for (day, i, j), var in r3_data.x.items()
-                if i != j and i != instance.depot_id and j != instance.depot_id
+                if i != j
             ]
-            depot_terms = [
-                _distance_scaled(instance, i, j) * var
-                for (day, i, j), var in r3_data.x.items()
-                if i != j and (i == instance.depot_id or j == instance.depot_id)
-            ]
-            duration_terms = [r3_data.return_time[day] - r3_data.departure[day] for day in selected_days]
-            r3_data.model.Minimize(sum(distance_terms) + sum(depot_terms) + sum(duration_terms))
+            r3_data.model.Minimize(sum(distance_terms))
             r3_solver = self._solve(r3_data.model, max(0.0, deadline - time.perf_counter()))
             r3_status = self._status_name(r3_solver)
             r3_time = time.perf_counter() - r3_start
@@ -221,8 +215,8 @@ class RollingHorizonCPRepairSolver:
         repaired_metrics = evaluate_weekly_schedule(instance, candidate_schedule)
         no_duplicates = self._no_duplicates(candidate_schedule)
         preserved = base_delivered <= candidate_schedule.delivered_customer_ids()
-        lexicographic_better = self._lexicographic_better(base_metrics, repaired_metrics)
-        accepted = repaired_metrics.hard_feasible and no_duplicates and preserved and lexicographic_better
+        objective_better = self._lexicographic_better(base_metrics, repaired_metrics)
+        accepted = repaired_metrics.hard_feasible and no_duplicates and preserved and objective_better
         final_schedule = candidate_schedule if accepted else base_schedule
         repaired_incomplete_ids = sorted(set(instance.customer_ids()) - final_schedule.delivered_customer_ids())
         rescued_customer_ids = sorted(set(incomplete_ids) - set(repaired_incomplete_ids))
@@ -230,7 +224,7 @@ class RollingHorizonCPRepairSolver:
         status.update(
             {
                 "repair_accepted": accepted,
-                "repair_reason": "accepted" if accepted else "candidate_not_lexicographically_better_or_infeasible",
+                "repair_reason": "accepted" if accepted else "candidate_not_officially_better_or_infeasible",
                 "repair_stage_r2_status": r2_status,
                 "repair_stage_r2_time_sec": r2_time,
                 "repair_stage_r3_status": r3_status,
@@ -247,6 +241,8 @@ class RollingHorizonCPRepairSolver:
                 "repair_preserved_base_deliveries": preserved,
             }
         )
+        final_metrics = repaired_metrics if accepted else base_metrics
+        status.update(official_objective_status(final_metrics))
         return self._with_status(final_schedule, status)
 
     def _base_status(self, base_schedule: WeeklySchedule, base_metrics: Any, incomplete_ids: list[str]) -> dict[str, Any]:
@@ -286,6 +282,9 @@ class RollingHorizonCPRepairSolver:
             "repair_hint_x_count": 0,
             "repair_hint_g_count": 0,
             "repair_hint_time_count": 0,
+            "repair_internal_waiting_objective_enabled": False,
+            "repair_search_decomposition": "staged CP search; final acceptance uses official weighted objective",
+            **official_objective_status(base_metrics),
         }
 
     @staticmethod
@@ -581,14 +580,18 @@ class RollingHorizonCPRepairSolver:
 
     @staticmethod
     def _lexicographic_better(base_metrics: Any, repaired_metrics: Any) -> bool:
+        if repaired_metrics.objective_value != base_metrics.objective_value:
+            return repaired_metrics.objective_value < base_metrics.objective_value
         base_tuple = (
             base_metrics.incomplete_count,
             base_metrics.total_deferral_days,
             round(base_metrics.total_distance_km, 6),
+            base_metrics.total_waiting_time_min,
         )
         repaired_tuple = (
             repaired_metrics.incomplete_count,
             repaired_metrics.total_deferral_days,
             round(repaired_metrics.total_distance_km, 6),
+            repaired_metrics.total_waiting_time_min,
         )
         return repaired_tuple < base_tuple

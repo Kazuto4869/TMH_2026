@@ -6,7 +6,7 @@ import logging
 
 from vrp_weekly.config import MONDAY, SUNDAY
 from vrp_weekly.distance import travel_time_between_minutes
-from vrp_weekly.evaluator import evaluate_daily_route
+from vrp_weekly.evaluator import evaluate_daily_route, evaluate_weekly_schedule, official_objective_status
 from vrp_weekly.core import DailyRoute, Instance, WeeklySchedule
 
 LOGGER = logging.getLogger(__name__)
@@ -65,5 +65,13 @@ class EarliestDeadlineSolver:
                 len(undelivered),
             )
 
-        return WeeklySchedule(routes=routes)
+        schedule = WeeklySchedule(routes=routes)
+        metrics = evaluate_weekly_schedule(instance, schedule)
+        status = {
+            "solver": self.name,
+            "status": "HEURISTIC_FEASIBLE" if metrics.hard_feasible else "HEURISTIC_INFEASIBLE",
+            "gap_percent": "",
+            **official_objective_status(metrics),
+        }
+        return WeeklySchedule(routes=routes, solver_status=status)
 

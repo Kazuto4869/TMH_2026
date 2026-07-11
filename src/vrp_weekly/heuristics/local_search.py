@@ -7,14 +7,13 @@ from dataclasses import dataclass
 
 from vrp_weekly.config import MONDAY, SUNDAY
 from vrp_weekly.core import DailyRoute, Instance, WeeklySchedule
-from vrp_weekly.evaluator import evaluate_daily_route
+from vrp_weekly.evaluator import evaluate_daily_route, evaluate_weekly_schedule
 from vrp_weekly.heuristics.route_eval import (
     HeuristicWeights,
     best_feasible_insertion,
     route_customer_ids,
     route_secondary_cost,
     validate_no_duplicates,
-    weekly_score,
     windows_for,
 )
 
@@ -34,7 +33,7 @@ class LocalSearchParams:
     time_limit_sec: int = 10
     distance_weight: float = 10.0
     waiting_weight: float = 1.0
-    duration_weight: float = 1.0
+    duration_weight: float = 0.0
 
 
 def improve_daily_route(
@@ -166,7 +165,7 @@ def _neighbor_sequences(sequence: list[str], params: LocalSearchParams) -> list[
 
 
 def _route_improves(candidate: DailyRoute, current: DailyRoute, weights: HeuristicWeights, allow_more_delivered: bool) -> bool:
-    """Return true if candidate is feasible and lexicographically no worse/better."""
+    """Return true if candidate improves delivered count or official route cost."""
     if not candidate.hard_feasible:
         return False
     candidate_ids = route_customer_ids(candidate)
@@ -182,18 +181,16 @@ def _route_improves(candidate: DailyRoute, current: DailyRoute, weights: Heurist
     return (
         route_secondary_cost(candidate, weights),
         candidate.route_waiting_time_min,
-        candidate.route_duration_min,
     ) < (
         route_secondary_cost(current, weights),
         current.route_waiting_time_min,
-        current.route_duration_min,
     )
 
 
 def _improve_inter_day(instance: Instance, schedule: WeeklySchedule, params: LocalSearchParams) -> WeeklySchedule:
     """Optionally attempt simple inter-day moves/swaps when enabled."""
     best = schedule
-    best_score = weekly_score(instance, best)
+    best_metrics = evaluate_weekly_schedule(instance, best)
     deadline = time.perf_counter() + max(0.0, params.time_limit_sec)
     routes = dict(best.routes)
 
@@ -215,9 +212,23 @@ def _improve_inter_day(instance: Instance, schedule: WeeklySchedule, params: Loc
                     candidate_routes[from_day] = evaluate_daily_route(instance, from_day, new_from)
                     candidate_routes[to_day] = insertion.route
                     candidate = WeeklySchedule(routes=candidate_routes, solver_status=best.solver_status)
-                    score = weekly_score(instance, candidate)
-                    if validate_no_duplicates(candidate) and score + 1e-9 < best_score:
+                    candidate_metrics = evaluate_weekly_schedule(instance, candidate)
+                    candidate_key = (
+                        candidate_metrics.objective_value,
+                        candidate_metrics.incomplete_count,
+                        candidate_metrics.total_deferral_days,
+                        candidate_metrics.total_distance_km,
+                        candidate_metrics.total_waiting_time_min,
+                    )
+                    best_key = (
+                        best_metrics.objective_value,
+                        best_metrics.incomplete_count,
+                        best_metrics.total_deferral_days,
+                        best_metrics.total_distance_km,
+                        best_metrics.total_waiting_time_min,
+                    )
+                    if validate_no_duplicates(candidate) and candidate_key < best_key:
                         best = candidate
-                        best_score = score
+                        best_metrics = candidate_metrics
                         routes = dict(best.routes)
     return best

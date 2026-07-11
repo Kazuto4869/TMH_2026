@@ -13,7 +13,7 @@ from vrp_weekly.config import (
     METRIC_COLUMNS,
     SORT_BY,
 )
-from vrp_weekly.evaluator import calculate_objective, evaluate_weekly_schedule
+from vrp_weekly.evaluator import evaluate_weekly_schedule
 from vrp_weekly.export import export_benchmark_plots, export_report_files, save_result_json, solver_results_dir
 from vrp_weekly.io import load_instance
 from vrp_weekly.core import Instance
@@ -89,7 +89,13 @@ def run_benchmark(
         schedule = solver.solve(instance)
         runtime_sec = time.perf_counter() - start_time
         metrics = evaluate_weekly_schedule(instance, schedule)
-        save_result_json(solver_results_dir(output_dir, solver.name) / "result.json", solver.name, schedule, metrics)
+        save_result_json(
+            solver_results_dir(output_dir, solver.name) / "result.json",
+            solver.name,
+            schedule,
+            metrics,
+            runtime_sec=runtime_sec,
+        )
         if export_report:
             export_report_files(output_dir, solver.name, instance, schedule, metrics)
 
@@ -105,14 +111,7 @@ def run_benchmark(
                 "total_route_interval_count": _blank_if_missing(schedule.solver_status.get("total_route_interval_count", "")),
                 "route_no_overlap_days": _blank_if_missing(schedule.solver_status.get("route_no_overlap_days", "")),
                 "total_remaining_after_week": _blank_if_missing(schedule.solver_status.get("total_remaining_after_week", "")),
-                "objective_value": calculate_objective(
-                    metrics.incomplete_count,
-                    metrics.total_deferral_days,
-                    metrics.total_distance_km,
-                    metrics.total_waiting_time_min,
-                    active_days=metrics.number_of_active_days,
-                    total_route_duration_min=metrics.total_route_duration_min,
-                ),
+                "objective_value": metrics.objective_value,
             }
         )
         row.pop("violations", None)

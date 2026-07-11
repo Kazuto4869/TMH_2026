@@ -8,7 +8,7 @@ from dataclasses import dataclass
 
 from vrp_weekly.config import MONDAY, SUNDAY
 from vrp_weekly.core import DailyRoute, Instance, WeeklySchedule
-from vrp_weekly.evaluator import evaluate_daily_route, evaluate_weekly_schedule
+from vrp_weekly.evaluator import evaluate_daily_route, evaluate_weekly_schedule, official_objective_status
 from vrp_weekly.heuristics.local_search import LocalSearchParams, improve_daily_route
 from vrp_weekly.heuristics.route_eval import (
     HeuristicWeights,
@@ -68,7 +68,7 @@ class HybridGeneticVNSSolver:
         max_candidates_per_day: int | None = None,
         distance_weight: float = 10.0,
         waiting_weight: float = 1.0,
-        duration_weight: float = 1.0,
+        duration_weight: float = 0.0,
     ) -> None:
         """Initialize GA/VNS parameters."""
         self.population_size = population_size
@@ -142,6 +142,8 @@ class HybridGeneticVNSSolver:
             "mutation_rate": self.mutation_rate,
             "crossover_rate": self.crossover_rate,
             "best_score": best.fitness,
+            "best_raw_objective": best.fitness,
+            "final_objective": metrics.objective_value,
             "best_generation": best_generation,
             "seed_count": len(seed_chromosomes),
             "local_search_enabled": self.use_local_search,
@@ -154,6 +156,7 @@ class HybridGeneticVNSSolver:
             "total_route_duration_min": metrics.total_route_duration_min,
             "hard_feasible": metrics.hard_feasible,
             "no_duplicate_delivery": validate_no_duplicates(schedule),
+            **official_objective_status(metrics),
         }
         return WeeklySchedule(routes=schedule.routes, solver_status=status)
 

@@ -6,6 +6,9 @@ from typing import Any
 
 from vrp_weekly.config import (
     DROP_PENALTY_BY_DAY,
+    WEIGHT_DEFERRAL,
+    WEIGHT_DISTANCE_KM,
+    WEIGHT_INCOMPLETE,
 )
 from vrp_weekly.models import (
     EarliestDeadlineSolver,
@@ -41,7 +44,7 @@ def create_solver(solver_key: str, **kwargs: Any) -> object:
             max_candidates_per_day=kwargs.get("heuristic_max_candidates_per_day"),
             distance_weight=float(kwargs.get("distance_weight", 10.0)),
             waiting_weight=float(kwargs.get("waiting_weight", 1.0)),
-            duration_weight=float(kwargs.get("duration_weight", 1.0)),
+            duration_weight=0.0,
             random_seed=int(kwargs.get("heuristic_random_seed", kwargs.get("seed", 1))),
         )
         solver.name = normalized
@@ -57,7 +60,7 @@ def create_solver(solver_key: str, **kwargs: Any) -> object:
             insertion_cost_weight=float(kwargs.get("insertion_cost_weight", 1.0)),
             distance_weight=float(kwargs.get("distance_weight", 10.0)),
             waiting_weight=float(kwargs.get("waiting_weight", 1.0)),
-            duration_weight=float(kwargs.get("duration_weight", 1.0)),
+            duration_weight=0.0,
             random_seed=int(kwargs.get("heuristic_random_seed", kwargs.get("seed", 1))),
         )
         solver.name = normalized
@@ -78,16 +81,16 @@ def create_solver(solver_key: str, **kwargs: Any) -> object:
             max_candidates_per_day=kwargs.get("heuristic_max_candidates_per_day"),
             distance_weight=float(kwargs.get("distance_weight", 10.0)),
             waiting_weight=float(kwargs.get("waiting_weight", 1.0)),
-            duration_weight=float(kwargs.get("duration_weight", 1.0)),
+            duration_weight=0.0,
         )
     if normalized in ("cp", "cp_full_week"):
         return FullWeekCPSATSolver(
             time_limit_sec=int(kwargs.get("cp_time_limit_sec", 60)),
             max_customers=kwargs.get("cp_max_customers", 40),
-            incomplete_weight=int(kwargs.get("incomplete_weight", 1_000_000)),
-            deferral_weight=int(kwargs.get("deferral_weight", 10_000)),
-            distance_weight=int(kwargs.get("distance_weight", 10)),
-            route_duration_weight=int(kwargs.get("route_duration_weight", 1)),
+            incomplete_weight=int(kwargs.get("incomplete_weight", WEIGHT_INCOMPLETE)),
+            deferral_weight=int(kwargs.get("deferral_weight", WEIGHT_DEFERRAL)),
+            distance_weight=int(kwargs.get("distance_weight", WEIGHT_DISTANCE_KM)),
+            route_duration_weight=0,
             num_workers=int(kwargs.get("cp_workers", 8)),
             log_search_progress=bool(kwargs.get("cp_log_search", False)),
         )
@@ -97,8 +100,8 @@ def create_solver(solver_key: str, **kwargs: Any) -> object:
             max_candidates_per_day=kwargs.get("cp_max_candidates_per_day", 80),
             drop_penalty_by_day=kwargs.get("drop_penalty_by_day", DROP_PENALTY_BY_DAY),
             distance_weight=int(kwargs.get("distance_weight", 10)),
-            route_duration_weight=int(kwargs.get("route_duration_weight", 1)),
-            urgency_weight=int(kwargs.get("urgency_weight", 100)),
+            route_duration_weight=0,
+            urgency_weight=0,
             num_workers=int(kwargs.get("cp_workers", 4)),
             log_search_progress=bool(kwargs.get("cp_log_search", False)),
             use_two_phase_objective=bool(kwargs.get("cp_two_phase_objective", True)),
@@ -129,8 +132,8 @@ def create_solver(solver_key: str, **kwargs: Any) -> object:
             max_candidates_per_day=kwargs.get("cp_max_candidates_per_day", 80),
             drop_penalty_by_day=kwargs.get("drop_penalty_by_day", DROP_PENALTY_BY_DAY),
             distance_weight=int(kwargs.get("distance_weight", 10)),
-            route_duration_weight=int(kwargs.get("route_duration_weight", 1)),
-            urgency_weight=int(kwargs.get("urgency_weight", 100)),
+            route_duration_weight=0,
+            urgency_weight=0,
             num_workers=int(kwargs.get("cp_workers", 4)),
             log_search_progress=bool(kwargs.get("cp_log_search", False)),
             use_two_phase_objective=bool(kwargs.get("cp_two_phase_objective", True)),

@@ -17,6 +17,7 @@ from vrp_weekly.config import (
 )
 from vrp_weekly.core import DailyRoute, Instance, Stop, TimeWindow, WeeklySchedule
 from vrp_weekly.distance import euclidean_distance_km
+from vrp_weekly.evaluator import evaluate_weekly_schedule, official_objective_status
 
 LOGGER = logging.getLogger(__name__)
 DISTANCE_SCALE = 1000
@@ -191,10 +192,10 @@ class FullWeekCPSATSolver:
         self,
         time_limit_sec: int = 60,
         max_customers: int | None = 40,
-        incomplete_weight: int = 1_000_000,
-        deferral_weight: int = 10_000,
+        incomplete_weight: int = 1_000,
+        deferral_weight: int = 100,
         distance_weight: int = 10,
-        route_duration_weight: int = 1,
+        route_duration_weight: int = 0,
         num_workers: int = 8,
         log_search_progress: bool = False,
     ) -> None:
@@ -225,7 +226,17 @@ class FullWeekCPSATSolver:
             customers = customers[: self.max_customers]
 
         if not customers:
-            return WeeklySchedule(routes={day: DailyRoute(day=day) for day in range(MONDAY, SUNDAY + 1)})
+            routes = {day: DailyRoute(day=day) for day in range(MONDAY, SUNDAY + 1)}
+            schedule = WeeklySchedule(routes=routes)
+            metrics = evaluate_weekly_schedule(instance, schedule)
+            return WeeklySchedule(routes=routes, solver_status={
+                "status": "NO_CUSTOMERS",
+                "internal_waiting_objective_enabled": False,
+                "instance_customer_count": total_customers,
+                "modeled_customer_count": 0,
+                "full_instance_model": total_customers == 0,
+                **official_objective_status(metrics),
+            })
 
         LOGGER.info(
             "cp_full_week build start customers=%s days=%s max_customers=%s",
@@ -330,7 +341,6 @@ class FullWeekCPSATSolver:
                     if i == j:
                         continue
                     objective_terms.append(_distance_objective_cost(instance, i, j, self.distance_weight) * x[i, j, day])
-            objective_terms.append(self.route_duration_weight * (return_time[day] - departure[day]))
 
         model.Minimize(sum(objective_terms))
 
@@ -345,7 +355,15 @@ class FullWeekCPSATSolver:
         )
         status = solver.Solve(model)
         status_name = solver.StatusName(status)
-        solver_status: dict[str, object] = {"status": status_name}
+        solver_status: dict[str, object] = {
+            "status": status_name,
+            "internal_waiting_objective_enabled": False,
+            "internal_objective_decomposition": "1000*incomplete + 100*deferral + 10*distance; exact waiting unavailable",
+            "instance_customer_count": total_customers,
+            "modeled_customer_count": len(customers),
+            "full_instance_model": len(customers) == total_customers,
+            "max_customers": self.max_customers,
+        }
         if status in (cp_model.OPTIMAL, cp_model.FEASIBLE):
             objective = solver.ObjectiveValue()
             best_bound = solver.BestObjectiveBound()
@@ -364,7 +382,10 @@ class FullWeekCPSATSolver:
         )
 
         if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
-            return WeeklySchedule(routes={day: DailyRoute(day=day) for day in days}, solver_status=solver_status)
+            routes = {day: DailyRoute(day=day) for day in days}
+            schedule = WeeklySchedule(routes=routes, solver_status=solver_status)
+            solver_status.update(official_objective_status(evaluate_weekly_schedule(instance, schedule)))
+            return WeeklySchedule(routes=routes, solver_status=solver_status)
 
         routes: dict[int, DailyRoute] = {}
         for day in days:
@@ -394,6 +415,9 @@ class FullWeekCPSATSolver:
             )
             LOGGER.info("cp_full_week day=%s extracted stops=%s", day, len(routes[day].stops))
 
+        schedule = WeeklySchedule(routes=routes, solver_status=solver_status)
+        metrics = evaluate_weekly_schedule(instance, schedule)
+        solver_status.update(official_objective_status(metrics))
         return WeeklySchedule(routes=routes, solver_status=solver_status)
 
 

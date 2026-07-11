@@ -64,36 +64,41 @@ FLEXIBLE_DEPOT_DEPARTURE = True
 # Evaluation priority
 # =========================
 
-WEIGHT_INCOMPLETE = 1_000_000
-WEIGHT_DEFERRAL = 10_000
+OBJECTIVE_VERSION = "weighted_1000_100_10_1"
+
+WEIGHT_INCOMPLETE = 1_000
+WEIGHT_DEFERRAL = 100
 WEIGHT_DISTANCE_KM = 10
 WEIGHT_WAITING_MIN = 1
-WEIGHT_ACTIVE_DAY = 100
+# Reporting-only metric; not part of the official objective.
+WEIGHT_ACTIVE_DAY = 0
+# Reporting-only metric; not part of the official objective.
 WEIGHT_ROUTE_DURATION_MIN = 0
 
 METRIC_COLUMNS = [
     "solver",
     "delivered_count",
     "incomplete_count",
-    "active_days",
     "total_deferral_days",
     "total_distance_km",
-    "total_travel_time_min",
     "total_waiting_time_min",
-    "total_service_time_min",
     "total_route_duration_min",
+    "active_days",
     "objective_value",
     "runtime_sec",
+    "hard_feasible",
+    "total_travel_time_min",
+    "total_service_time_min",
     "max_day_gap_percent",
     "total_fixed_impossible_arcs",
     "average_fixed_arc_ratio",
     "total_route_interval_count",
     "route_no_overlap_days",
     "total_remaining_after_week",
-    "hard_feasible",
 ]
 
 SORT_BY = [
+    "objective_value",
     "incomplete_count",
     "total_deferral_days",
     "total_distance_km",

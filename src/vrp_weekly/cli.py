@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import logging
 import sys
+import time
 from pathlib import Path
 
 from vrp_weekly.evaluator import evaluate_weekly_schedule, print_metrics, print_schedule
@@ -164,7 +165,9 @@ def main(argv: list[str] | None = None) -> int:
         ga_time_limit_sec=args.ga_time_limit_sec,
         seed=args.seed,
     )
+    start_time = time.perf_counter()
     schedule = solver.solve(instance)
+    runtime_sec = time.perf_counter() - start_time
     metrics = evaluate_weekly_schedule(instance, schedule)
     solver_status = solver_status_summary(schedule, metrics)
 
@@ -176,7 +179,13 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.save_results:
         results_dir = Path(args.results_dir)
-        save_result_json(solver_results_dir(results_dir, solver.name) / "result.json", solver.name, schedule, metrics)
+        save_result_json(
+            solver_results_dir(results_dir, solver.name) / "result.json",
+            solver.name,
+            schedule,
+            metrics,
+            runtime_sec=runtime_sec,
+        )
         export_report_files(results_dir, solver.name, instance, schedule, metrics)
         print(f"saved_results={results_dir}")
 

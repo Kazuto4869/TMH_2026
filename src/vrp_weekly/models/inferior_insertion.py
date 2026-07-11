@@ -6,7 +6,7 @@ import time
 
 from vrp_weekly.config import DAY_END_MIN, MONDAY, SUNDAY
 from vrp_weekly.core import DailyRoute, Instance, WeeklySchedule
-from vrp_weekly.evaluator import evaluate_daily_route, evaluate_weekly_schedule
+from vrp_weekly.evaluator import evaluate_daily_route, evaluate_weekly_schedule, official_objective_status
 from vrp_weekly.heuristics.local_search import LocalSearchParams, improve_daily_route
 from vrp_weekly.heuristics.route_eval import HeuristicWeights, best_feasible_insertion, validate_no_duplicates, windows_for
 from vrp_weekly.heuristics.scoring import (
@@ -32,7 +32,7 @@ class InferiorInsertionSolver:
         max_candidates_per_day: int | None = None,
         distance_weight: float = 10.0,
         waiting_weight: float = 1.0,
-        duration_weight: float = 1.0,
+        duration_weight: float = 0.0,
         random_seed: int = 1,
     ) -> None:
         """Initialize heuristic parameters."""
@@ -137,6 +137,7 @@ class InferiorInsertionSolver:
             "runtime_sec": time.perf_counter() - start,
             "day_statuses": day_statuses,
             "no_duplicate_delivery": validate_no_duplicates(schedule),
+            **official_objective_status(metrics),
         }
         return WeeklySchedule(routes=routes, solver_status=status)
 

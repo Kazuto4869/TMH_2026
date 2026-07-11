@@ -10,14 +10,25 @@ from pathlib import Path
 from typing import Any
 
 from vrp_weekly.core import EvaluationMetrics, Instance, WeeklySchedule
+from vrp_weekly.config import OBJECTIVE_VERSION
+from vrp_weekly.evaluator import objective_breakdown
 from vrp_weekly.time_utils import format_hhmm
 
 
 def solver_status_summary(schedule: WeeklySchedule, metrics: EvaluationMetrics) -> dict[str, object]:
     """Return solver status suitable for display and exports."""
-    if schedule.solver_status:
-        return dict(schedule.solver_status)
-    return {"status": "HEURISTIC_FEASIBLE" if metrics.hard_feasible else "HEURISTIC_INFEASIBLE", "gap_percent": ""}
+    status = dict(schedule.solver_status) if schedule.solver_status else {
+        "status": "HEURISTIC_FEASIBLE" if metrics.hard_feasible else "HEURISTIC_INFEASIBLE",
+        "gap_percent": "",
+    }
+    breakdown = objective_breakdown(metrics)
+    status.update(
+        objective_version=OBJECTIVE_VERSION,
+        objective_value=metrics.objective_value,
+        objective_breakdown=breakdown,
+        **breakdown,
+    )
+    return status
 
 
 def format_gap_percent(value: object) -> str:
@@ -70,14 +81,32 @@ def schedule_to_dict(schedule: WeeklySchedule) -> dict[str, Any]:
     }
 
 
-def save_result_json(path: str | Path, solver_name: str, schedule: WeeklySchedule, metrics: EvaluationMetrics) -> None:
+def save_result_json(
+    path: str | Path,
+    solver_name: str,
+    schedule: WeeklySchedule,
+    metrics: EvaluationMetrics,
+    runtime_sec: float | None = None,
+) -> None:
     """Save one solver result as JSON."""
     output_path = Path(path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
+    metrics_payload = metrics.to_dict()
+    status = solver_status_summary(schedule, metrics)
+    saved_runtime = runtime_sec if runtime_sec is not None else status.get("runtime_sec", "")
+    metrics_payload.update(
+        objective_version=OBJECTIVE_VERSION,
+        objective_breakdown=objective_breakdown(metrics),
+        runtime_sec=saved_runtime,
+    )
     payload = {
         "solver": solver_name,
-        "solver_status": solver_status_summary(schedule, metrics),
-        "metrics": metrics.to_dict(),
+        "objective_version": OBJECTIVE_VERSION,
+        "objective_value": metrics.objective_value,
+        "objective_breakdown": objective_breakdown(metrics),
+        "runtime_sec": saved_runtime,
+        "solver_status": status,
+        "metrics": metrics_payload,
         "schedule": schedule_to_dict(schedule),
     }
     output_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
@@ -243,6 +272,11 @@ def export_result_txt(
     status = solver_status_summary(schedule, metrics)
     lines.append(f"solver_status={status.get('status', '')}")
     lines.append(f"gap_percent={format_gap_percent(status.get('gap_percent', ''))}")
+    breakdown = objective_breakdown(metrics)
+    lines.append("official_objective=1000 * incomplete + 100 * deferral + 10 * distance + waiting")
+    lines.append(f"objective_value={metrics.objective_value:.6f}")
+    for key, value in breakdown.items():
+        lines.append(f"{key}={value:.6f}")
     if "objective" in status:
         lines.append(f"solver_objective={status['objective']}")
     if "best_bound" in status:

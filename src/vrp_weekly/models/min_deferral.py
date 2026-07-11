@@ -8,7 +8,7 @@ from dataclasses import dataclass
 
 from vrp_weekly.config import ENABLE_LOCAL_SEARCH, MAX_LOCAL_SEARCH_ITERATIONS, MONDAY, SUNDAY, WAITING_WEIGHT
 from vrp_weekly.core import DailyRoute, Instance, WeeklySchedule
-from vrp_weekly.evaluator import evaluate_daily_route
+from vrp_weekly.evaluator import evaluate_daily_route, evaluate_weekly_schedule, official_objective_status
 
 LOGGER = logging.getLogger(__name__)
 
@@ -119,7 +119,15 @@ class MinDeferralSolver:
                 len(undelivered),
             )
 
-        return WeeklySchedule(routes=routes)
+        schedule = WeeklySchedule(routes=routes)
+        metrics = evaluate_weekly_schedule(instance, schedule)
+        status = {
+            "solver": self.name,
+            "status": "HEURISTIC_FEASIBLE" if metrics.hard_feasible else "HEURISTIC_INFEASIBLE",
+            "gap_percent": "",
+            **official_objective_status(metrics),
+        }
+        return WeeklySchedule(routes=routes, solver_status=status)
 
 
 def remaining_available_days(instance: Instance, customer_id: str, day: int) -> list[int]:
@@ -303,11 +311,8 @@ def route_objective(
     duration_weight: float = 0.0,
 ) -> float:
     """Return secondary weighted route cost."""
-    return (
-        distance_weight * route.route_distance_km
-        + waiting_weight * route.route_waiting_time_min
-        + duration_weight * route.route_duration_min
-    )
+    del distance_weight, waiting_weight, duration_weight
+    return 10.0 * route.route_distance_km + route.route_waiting_time_min
 
 
 def _selection_key(instance: Instance, day: int, insertion: InsertionCandidate) -> tuple[float, float, int, str]:

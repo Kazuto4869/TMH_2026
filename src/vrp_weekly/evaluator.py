@@ -10,14 +10,13 @@ from vrp_weekly.config import (
     DEFAULT_SERVICE_TIME_MIN,
     FLEXIBLE_DEPOT_DEPARTURE,
     MONDAY,
+    OBJECTIVE_VERSION,
     REQUIRE_RETURN_BEFORE_DAY_END,
     REQUIRE_SERVICE_END_WITHIN_WINDOW,
     SUNDAY,
-    WEIGHT_ACTIVE_DAY,
     WEIGHT_DEFERRAL,
     WEIGHT_DISTANCE_KM,
     WEIGHT_INCOMPLETE,
-    WEIGHT_ROUTE_DURATION_MIN,
     WEIGHT_WAITING_MIN,
 )
 from vrp_weekly.distance import euclidean_distance_km, travel_time_between_minutes
@@ -191,13 +190,11 @@ def evaluate_weekly_schedule(instance: Instance, schedule: WeeklySchedule) -> Ev
 
     incomplete_count = len(customer_ids - set(delivered_by_day))
     total_deferral_days = sum(day - min(instance.available_days(customer_id)) for customer_id, day in delivered_by_day.items())
-    objective_value = calculate_objective(
+    objective_value = calculate_objective_value(
         incomplete_count=incomplete_count,
         total_deferral_days=total_deferral_days,
         total_distance_km=total_distance_km,
         total_waiting_time_min=total_waiting_time_min,
-        active_days=active_days,
-        total_route_duration_min=total_route_duration_min,
     )
 
     return EvaluationMetrics(
@@ -262,23 +259,68 @@ def validate_schedule(instance: Instance, schedule: WeeklySchedule) -> list[str]
     return violations
 
 
-def calculate_objective(
+def calculate_objective_value(
+    *,
     incomplete_count: int,
     total_deferral_days: int,
     total_distance_km: float,
-    total_waiting_time_min: int,
-    active_days: int = 0,
-    total_route_duration_min: int = 0,
+    total_waiting_time_min: float,
 ) -> float:
-    """Compute the weighted benchmark objective value."""
+    """Compute the official weighted objective for a complete schedule."""
+    values = {
+        "incomplete_count": incomplete_count,
+        "total_deferral_days": total_deferral_days,
+        "total_distance_km": total_distance_km,
+        "total_waiting_time_min": total_waiting_time_min,
+    }
+    for name, value in values.items():
+        if value < 0:
+            raise ValueError(f"{name} must be non-negative, got {value}")
     return (
         WEIGHT_INCOMPLETE * incomplete_count
         + WEIGHT_DEFERRAL * total_deferral_days
         + WEIGHT_DISTANCE_KM * total_distance_km
         + WEIGHT_WAITING_MIN * total_waiting_time_min
-        + WEIGHT_ACTIVE_DAY * active_days
-        + WEIGHT_ROUTE_DURATION_MIN * total_route_duration_min
     )
+
+
+def calculate_objective(
+    incomplete_count: int,
+    total_deferral_days: int,
+    total_distance_km: float,
+    total_waiting_time_min: float,
+    active_days: int = 0,
+    total_route_duration_min: int = 0,
+) -> float:
+    """Backward-compatible wrapper; reporting-only arguments are ignored."""
+    del active_days, total_route_duration_min
+    return calculate_objective_value(
+        incomplete_count=incomplete_count,
+        total_deferral_days=total_deferral_days,
+        total_distance_km=total_distance_km,
+        total_waiting_time_min=total_waiting_time_min,
+    )
+
+
+def objective_breakdown(metrics: EvaluationMetrics) -> dict[str, float]:
+    """Return the four official weighted components for display and export."""
+    return {
+        "incomplete_component": WEIGHT_INCOMPLETE * metrics.incomplete_count,
+        "deferral_component": WEIGHT_DEFERRAL * metrics.total_deferral_days,
+        "distance_component": WEIGHT_DISTANCE_KM * metrics.total_distance_km,
+        "waiting_component": WEIGHT_WAITING_MIN * metrics.total_waiting_time_min,
+    }
+
+
+def official_objective_status(metrics: EvaluationMetrics) -> dict[str, object]:
+    """Return canonical objective fields for solver status dictionaries."""
+    breakdown = objective_breakdown(metrics)
+    return {
+        "objective_version": OBJECTIVE_VERSION,
+        "objective_value": metrics.objective_value,
+        "objective_breakdown": breakdown,
+        **breakdown,
+    }
 
 
 def complete_empty_weekly_schedule() -> WeeklySchedule:
@@ -307,6 +349,7 @@ def print_schedule(schedule: WeeklySchedule) -> None:
 
 def print_metrics(metrics: EvaluationMetrics) -> None:
     """Print evaluation metrics in a compact key-value format."""
+    print("Official objective: 1000 * incomplete + 100 * deferral + 10 * distance + waiting")
     for key, value in metrics.to_dict().items():
         if key == "violations":
             continue

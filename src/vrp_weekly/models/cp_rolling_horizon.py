@@ -20,6 +20,7 @@ from vrp_weekly.config import (
 )
 from vrp_weekly.core import DailyRoute, Instance, Stop, TimeWindow, WeeklySchedule
 from vrp_weekly.distance import euclidean_distance_km
+from vrp_weekly.evaluator import evaluate_weekly_schedule, official_objective_status
 
 LOGGER = logging.getLogger(__name__)
 DISTANCE_SCALE = 1000
@@ -424,8 +425,8 @@ class RollingHorizonCPSATSolver:
         max_candidates_per_day: int | None = 80,
         drop_penalty_by_day: dict[int, int] | None = None,
         distance_weight: int = 10,
-        route_duration_weight: int = 1,
-        urgency_weight: int = 100,
+        route_duration_weight: int = 0,
+        urgency_weight: int = 0,
         num_workers: int = 4,
         log_search_progress: bool = False,
         use_two_phase_objective: bool = True,
@@ -636,6 +637,9 @@ class RollingHorizonCPSATSolver:
         else:
             weekly_status["incomplete_last_day_diagnostics"] = []
         weekly_status["incomplete_customer_diagnostics"] = incomplete_diagnostics
+        weekly_status["stage2_waiting_objective_enabled"] = False
+        schedule = WeeklySchedule(routes=routes, solver_status=weekly_status)
+        weekly_status.update(official_objective_status(evaluate_weekly_schedule(instance, schedule)))
         return WeeklySchedule(routes=routes, solver_status=weekly_status)
 
     def _empty_day_status(
@@ -2240,9 +2244,9 @@ class RollingHorizonCPSATSolver:
                 if i == j:
                     continue
                 objective_terms.append(precomputed.distance_cost[i, j] * data.x[i, j])
-        objective_terms.append(self.route_duration_weight * (data.return_time - data.departure))
         for customer_id in candidates:
-            objective_terms.append(self.urgency_weight * precomputed.urgency[customer_id] * (1 - data.y[customer_id]))
+            earliest_day = min(instance.available_days(customer_id))
+            objective_terms.append(100 * (day - earliest_day) * data.y[customer_id])
         data.model.Minimize(sum(objective_terms))
 
         solver = self._new_solver(self.time_limit_per_day_sec)
@@ -2329,16 +2333,16 @@ class RollingHorizonCPSATSolver:
         day: int,
         candidates: list[str],
     ) -> None:
-        """Set phase-2 route quality objective with delivered count fixed."""
+        """Set official represented Stage-2 terms; exact waiting is not modeled."""
         objective_terms: list[cp_model.LinearExpr] = []
         for i in data.nodes:
             for j in data.nodes:
                 if i == j:
                     continue
                 objective_terms.append(data.precomputed.distance_cost[i, j] * data.x[i, j])
-        objective_terms.append(self.route_duration_weight * (data.return_time - data.departure))
         for customer_id in candidates:
-            objective_terms.append(self.urgency_weight * data.precomputed.urgency[customer_id] * (1 - data.y[customer_id]))
+            earliest_day = min(instance.available_days(customer_id))
+            objective_terms.append(100 * (day - earliest_day) * data.y[customer_id])
         data.model.Minimize(sum(objective_terms))
 
     def _add_phase1_solution_hint(

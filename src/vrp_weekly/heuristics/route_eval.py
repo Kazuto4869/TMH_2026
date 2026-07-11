@@ -30,7 +30,7 @@ class HeuristicWeights:
 
     distance_weight: float = 10.0
     waiting_weight: float = 1.0
-    duration_weight: float = 1.0
+    duration_weight: float = 0.0
 
 
 def windows_for(instance: Instance, customer_id: str, day: int) -> list[TimeWindow]:
@@ -75,23 +75,12 @@ def validate_no_duplicates(schedule: WeeklySchedule) -> bool:
 def route_secondary_cost(route: DailyRoute, weights: HeuristicWeights | None = None) -> float:
     """Return weighted secondary route cost."""
     weights = HeuristicWeights() if weights is None else weights
-    return (
-        weights.distance_weight * route.route_distance_km
-        + weights.waiting_weight * route.route_waiting_time_min
-        + weights.duration_weight * route.route_duration_min
-    )
+    return 10.0 * route.route_distance_km + route.route_waiting_time_min
 
 
 def weekly_score(instance: Instance, schedule: WeeklySchedule) -> float:
-    """Return lexicographic-priority numeric score for a weekly schedule."""
-    metrics = evaluate_weekly_schedule(instance, schedule)
-    return (
-        1_000_000 * metrics.incomplete_count
-        + 10_000 * metrics.total_deferral_days
-        + 10 * metrics.total_distance_km
-        + metrics.total_waiting_time_min
-        + metrics.total_route_duration_min
-    )
+    """Return the official lower-is-better objective for a weekly schedule."""
+    return evaluate_weekly_schedule(instance, schedule).objective_value
 
 
 def best_feasible_insertion(
@@ -158,4 +147,3 @@ def all_feasible_insertions(
 def schedule_hard_feasible(instance: Instance, schedule: WeeklySchedule) -> bool:
     """Return true iff central schedule validation has no violations."""
     return not validate_schedule(instance, schedule)
-
