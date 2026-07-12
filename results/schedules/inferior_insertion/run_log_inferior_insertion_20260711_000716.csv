@@ -1,0 +1,2 @@
+timestamp,model,row_type,day,runtime_sec,solver_status,gap_percent,cp_time_limit_sec,cp_time_limit_per_day_sec,cp_max_customers,cp_max_candidates_per_day,cp_threads,cp_log_search,delivered_count,incomplete_count,total_distance_km,total_travel_time_min,total_waiting_time_min,total_service_time_min,total_route_duration_min,number_of_active_days,active_days,total_deferral_days,hard_feasible,objective_value,violation_count
+20260711_000716,inferior_insertion,SUMMARY,,122.754758,HEURISTIC_FEASIBLE,,,,,,,,300,0,1577.0992262576738,2052,877,2226,5155,7,7,622,True,78847.99226257674,0

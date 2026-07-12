@@ -54,17 +54,27 @@ Mục tiêu benchmark ưu tiên theo thứ tự:
 2. Giao càng sớm càng tốt so với ngày khả dụng đầu tiên của từng khách hàng.
 3. Giảm tổng quãng đường.
 4. Giảm tổng thời gian chờ.
-5. Giảm số ngày hoạt động, với trọng số nhỏ hơn.
 
 Hàm mục tiêu báo cáo là:
 
 ```text
-1_000_000 * incomplete_count
-+ 10_000 * total_deferral_days
+1000 * incomplete_count
++ 100 * total_deferral_days
 + 10 * total_distance_km
 + total_waiting_time_min
-+ 100 * active_days
 ```
+
+Lower `objective_value` is better. This is the single official weighted-sum
+objective, with fixed coefficients `1000`, `100`, `10`, and `1`. Incomplete
+orders have the largest coefficient, followed by deferral, distance, and
+waiting. `active_days` and `total_route_duration_min` remain reporting-only
+metrics and never contribute to `objective_value`.
+
+Every complete `WeeklySchedule` is evaluated by `evaluate_weekly_schedule(...)`
+with this same formula. Constructive solvers retain their model-specific local
+selection rules. `cp_rolling` retains Stage 1A/1B because weekly incomplete
+count is not known inside one isolated daily model; its final weekly schedule
+is still evaluated with the official weighted sum.
 
 Trong đó:
 
@@ -72,9 +82,10 @@ Trong đó:
 - `total_deferral_days`: tổng số ngày bị dời, tính bằng `delivered_day - earliest_available_day`.
 - `total_distance_km`: tổng quãng đường của tất cả các tuyến ngày.
 - `total_waiting_time_min`: tổng thời gian xe phải chờ tại khách hàng.
-- `active_days`: số ngày có ít nhất một điểm giao.
+- `active_days`: số ngày có ít nhất một điểm giao; chỉ dùng để báo cáo.
+- `total_route_duration_min`: tổng thời lượng các route; chỉ dùng để báo cáo.
 
-Các kết quả benchmark được sắp xếp theo `incomplete_count`, `total_deferral_days`, `total_distance_km`, rồi `total_waiting_time_min`.
+Các kết quả benchmark được sắp xếp trước hết theo `objective_value` tăng dần; chỉ khi bằng nhau mới dùng `incomplete_count`, `total_deferral_days`, `total_distance_km`, `total_waiting_time_min`, rồi `runtime_sec`.
 
 ## 2. Tổng quan codebase
 
@@ -185,7 +196,7 @@ Ghi chú CP:
 - `service_phases_only` và `mandatory_stage_only` là diagnostic mode. `--cp-phase1-only` chỉ còn là alias deprecated cho `--cp-service-phases-only`, không có nghĩa là chỉ chạy Stage 1A.
 - `main.py` không hỏi optimization mode, adaptive/fixed split hay Stage 2 fraction cho `cp_rolling`; các tùy chọn nâng cao này nằm trong CLI.
 - `cp_rolling_repair` chạy `cp_rolling` với default `full_three_stage`, rồi repair một neighborhood nhiều ngày bằng CP-SAT thuần. Hints của repair chỉ đến từ lịch CP base đã khả thi, không đến từ nearest/min_deferral/regret/GA/local search.
-- `cp_rolling_repair` bảo toàn mọi khách đã hoàn thành ở base schedule và chỉ accept lịch tuần repaired nếu evaluator cho hard-feasible và cải thiện lexicographic.
+- `cp_rolling_repair` bảo toàn mọi khách đã hoàn thành ở base schedule và chỉ accept lịch tuần repaired nếu evaluator cho hard-feasible và cải thiện official weighted objective (các tie-break chỉ dùng khi objective bằng nhau).
 - Objective khoảng cách trong CP dùng scale theo kilomet: `round(distance_weight * distance_km)`, không dùng meter-scale `distance_km * 1000`.
 - Route return time trong output CP được tính lại từ sequence thực tế, không lấy trực tiếp biến `R` nội bộ của CP-SAT.
 - `cp_rolling` dùng multiple time-window selection, impossible arc fixing, candidate filtering, two-phase objective mặc định, service `NoOverlap`, round-trip lower bounds, và các ràng buộc tightening như degree linking, arc linking, window-pair cuts, pair conflict cuts, depot-window cuts, dominated-window cuts và precedence cuts.
@@ -326,13 +337,39 @@ File grid được ghi tăng dần sau từng profile; nếu run bị dừng, ch
 Nếu đã có các file `results/schedules/{solver}/result.json`, có thể tạo lại bảng so sánh mà không chạy solver:
 
 ```bash
-python -m vrp_weekly.compare_results --results-dir results
+python compare_result.py
 ```
+
+Terminal hiển thị bảng so sánh gọn theo objective; file
+`results/comparison/benchmark_summary.csv` vẫn giữ đầy đủ các cột báo cáo.
+File `results/comparison/comparison_table.txt` gồm bảng tổng hợp, delta của
+từng model so với ba baseline, metrics chi tiết và route của từng ngày cho
+từng model.
+
+Cột `gap_cp%` luôn dùng objective cuối tuần đã lưu của `cp_rolling` làm CP
+reference: `100 * (objective - cp_objective) / cp_objective`. Đây là objective
+do evaluator tính từ đủ 7 ngày, không phải objective của một subproblem ngày.
+Giá trị âm nghĩa là model có objective thấp hơn incumbent CP rolling. Đây
+không phải certified optimality gap vì `cp_rolling` không globally exact.
 
 Thêm `--export-plots` để tạo lại biểu đồ:
 
 ```bash
-python -m vrp_weekly.compare_results --results-dir results --export-plots
+python compare_result.py --export-plots
+```
+
+Vẽ đường đi từ các `result.json` đã lưu mà không chạy lại solver:
+
+```bash
+python plot_routes.py
+```
+
+Mỗi solver được xuất thành một ảnh 7 ngày trong `results/comparison/route_plots/`.
+Có thể chỉ vẽ một hoặc nhiều solver, hoặc bật nhãn khách hàng:
+
+```bash
+python plot_routes.py --solver nearest
+python plot_routes.py --solver cp_rolling --solver cp_rolling_repair --show-labels
 ```
 
 ## 10. Định dạng output
@@ -378,7 +415,7 @@ Các trọng số cần chỉnh khi tuning:
 
 - Metrics/evaluator P-weights nằm trong `src/vrp_weekly/config.py`: `WEIGHT_INCOMPLETE`, `WEIGHT_DEFERRAL`, `WEIGHT_DISTANCE_KM`, `WEIGHT_WAITING_MIN`, `WEIGHT_ACTIVE_DAY`, `WEIGHT_ROUTE_DURATION_MIN`.
 - CP rolling drop penalties nằm trong `src/vrp_weekly/config.py`: `DROP_PENALTY_BY_DAY`.
-- CP objective defaults đi qua `src/vrp_weekly/model_factory.py`: `distance_weight=10`, `route_duration_weight=1`, `urgency_weight=100`.
+- CP Stage 2 dùng các thành phần biểu diễn chính xác: `100 * daily_deferral + 10 * distance`; route duration và urgency không thuộc objective. Waiting chỉ được tối ưu nội bộ khi có biến exact, còn final result luôn được evaluator tính đủ.
 - CP rolling defaults: `adaptive_daily_deadline=True`, `optimization_mode="full_three_stage"`, `stage2_max_time_fraction=0.10`, `time_limit_per_day_sec=60`, `max_candidates_per_day=80`, `num_workers=4`, `candidate_strategy="hybrid"`, `use_service_no_overlap=True`, `use_route_interval_no_overlap=True`, `use_decision_strategy=True`.
 - `min_deferral` secondary route-cost defaults nằm trong `src/vrp_weekly/models/min_deferral.py`: `distance_weight=10.0`, `WAITING_WEIGHT`, `duration_weight=0.0`.
 - Bản ghi report-friendly nằm trong `params/default_params.txt`.

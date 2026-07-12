@@ -172,7 +172,7 @@ def main() -> int:
         result_txt_path = output_dir / "result.txt"
         daily_schedule_path = output_dir / "daily_schedule.csv"
         incomplete_orders_path = output_dir / "incomplete_orders.csv"
-        save_result_json(result_path, model.name, schedule, metrics)
+        save_result_json(result_path, model.name, schedule, metrics, runtime_sec=runtime_sec)
         export_report_files(results_dir, model.name, instance, schedule, metrics)
         run_log_path = output_dir / f"run_log_{model.name}_{run_timestamp}.csv"
         if model.name in {"cp_rolling", "cp_rolling_repair"}:

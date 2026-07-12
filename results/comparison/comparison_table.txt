@@ -1,0 +1,281 @@
+WEEKLY VRP SAVED-RESULT COMPARISON
+Official objective = 1000*incomplete + 100*deferral + 10*distance + waiting
+Lower objective is better.
+CP reference solver = cp_rolling
+CP incumbent objective = 93293.915721
+gap_cp% = 100 * (model objective - CP incumbent objective) / CP incumbent objective.
+Negative gap_cp% means the model has a lower objective than the current CP incumbent.
+gap_cp% is not a certified optimality gap because cp_rolling is not globally exact.
+The reference is always cp_rolling's final seven-day evaluator objective, never a daily CP objective.
+
+1. SUMMARY
++-----------------------+-----------+------------+----------+----------+---------+------------+---------+---------+
+| solver                | delivered | incomplete | deferral | distance | waiting | objective  | gap_cp% | runtime |
++-----------------------+-----------+------------+----------+----------+---------+------------+---------+---------+
+| nearest [B]           |       201 |         99 |      612 |  750.647 |    2320 | 170026.469 |  82.25% |   1.085 |
+| deadline [B]          |       286 |         14 |      537 | 1994.187 |     387 |  88028.873 |  -5.64% |   2.469 |
+| min_deferral [B]      |       300 |          0 |      568 | 1759.814 |     818 |  75216.135 | -19.38% | 109.059 |
+| regret_dispatch       |       300 |          0 |      549 | 1486.680 |    1155 |  70921.801 | -23.98% | 143.856 |
+| regret_dispatch_ls    |       300 |          0 |      549 | 1486.680 |    1155 |  70921.801 | -23.98% | 144.217 |
+| inferior_insertion_ls |       300 |          0 |      622 | 1577.099 |     877 |  78847.992 | -15.48% | 122.605 |
+| inferior_insertion    |       300 |          0 |      622 | 1577.099 |     877 |  78847.992 | -15.48% | 122.755 |
+| hybrid_genetic_vns    |       297 |          3 |      601 | 1586.262 |    1063 |  80025.616 | -14.22% | 164.617 |
+| cp_rolling            |       299 |          1 |      678 | 2397.992 |     514 |  93293.916 |   0.00% | 347.655 |
+| cp_rolling_repair     |       297 |          3 |      703 | 2561.748 |     435 |  99352.481 |   6.49% | 621.356 |
+| cp_full_week          |       112 |        188 |      279 | 1553.332 |    5653 | 237086.317 | 154.13% | 331.514 |
++-----------------------+-----------+------------+----------+----------+---------+------------+---------+---------+
+[B] baseline
+
+2. MODELS COMPARED WITH BASELINES
+Delta convention: model - baseline. Negative objective delta means the model is better.
+
++-----------------------+--------------+---------+----------+---------+-----------+--------+-------------+--------+
+| model                 | baseline     | d_deliv | d_incomp | d_defer | d_dist    | d_wait | d_obj       | result |
++-----------------------+--------------+---------+----------+---------+-----------+--------+-------------+--------+
+| regret_dispatch       | nearest      |     +99 |      -99 |     -63 |  +736.033 |  -1165 |  -99104.667 | BETTER |
+| regret_dispatch       | deadline     |     +14 |      -14 |     +12 |  -507.507 |   +768 |  -17107.072 | BETTER |
+| regret_dispatch       | min_deferral |      +0 |       +0 |     -19 |  -273.133 |   +337 |   -4294.334 | BETTER |
+| regret_dispatch_ls    | nearest      |     +99 |      -99 |     -63 |  +736.033 |  -1165 |  -99104.667 | BETTER |
+| regret_dispatch_ls    | deadline     |     +14 |      -14 |     +12 |  -507.507 |   +768 |  -17107.072 | BETTER |
+| regret_dispatch_ls    | min_deferral |      +0 |       +0 |     -19 |  -273.133 |   +337 |   -4294.334 | BETTER |
+| inferior_insertion_ls | nearest      |     +99 |      -99 |     +10 |  +826.452 |  -1443 |  -91178.476 | BETTER |
+| inferior_insertion_ls | deadline     |     +14 |      -14 |     +85 |  -417.088 |   +490 |   -9180.881 | BETTER |
+| inferior_insertion_ls | min_deferral |      +0 |       +0 |     +54 |  -182.714 |    +59 |   +3631.857 | WORSE  |
+| inferior_insertion    | nearest      |     +99 |      -99 |     +10 |  +826.452 |  -1443 |  -91178.476 | BETTER |
+| inferior_insertion    | deadline     |     +14 |      -14 |     +85 |  -417.088 |   +490 |   -9180.881 | BETTER |
+| inferior_insertion    | min_deferral |      +0 |       +0 |     +54 |  -182.714 |    +59 |   +3631.857 | WORSE  |
+| hybrid_genetic_vns    | nearest      |     +96 |      -96 |     -11 |  +835.615 |  -1257 |  -90000.853 | BETTER |
+| hybrid_genetic_vns    | deadline     |     +11 |      -11 |     +64 |  -407.926 |   +676 |   -8003.257 | BETTER |
+| hybrid_genetic_vns    | min_deferral |      -3 |       +3 |     +33 |  -173.552 |   +245 |   +4809.481 | WORSE  |
+| cp_rolling            | nearest      |     +98 |      -98 |     +66 | +1647.345 |  -1806 |  -76732.553 | BETTER |
+| cp_rolling            | deadline     |     +13 |      -13 |    +141 |  +403.804 |   +127 |   +5265.043 | WORSE  |
+| cp_rolling            | min_deferral |      -1 |       +1 |    +110 |  +638.178 |   -304 |  +18077.780 | WORSE  |
+| cp_rolling_repair     | nearest      |     +96 |      -96 |     +91 | +1811.101 |  -1885 |  -70673.988 | BETTER |
+| cp_rolling_repair     | deadline     |     +11 |      -11 |    +166 |  +567.561 |    +48 |  +11323.608 | WORSE  |
+| cp_rolling_repair     | min_deferral |      -3 |       +3 |    +135 |  +801.935 |   -383 |  +24136.345 | WORSE  |
+| cp_full_week          | nearest      |     -89 |      +89 |    -333 |  +802.685 |  +3333 |  +67059.849 | WORSE  |
+| cp_full_week          | deadline     |    -174 |     +174 |    -258 |  -440.856 |  +5266 | +149057.444 | WORSE  |
+| cp_full_week          | min_deferral |    -188 |     +188 |    -289 |  -206.482 |  +4835 | +161870.182 | WORSE  |
++-----------------------+--------------+---------+----------+---------+-----------+--------+-------------+--------+
+
+3. MODEL DETAILS AND DAILY ROUTES
+
+====================================================================================================
+MODEL: nearest [BASELINE]
+delivered=201 | incomplete=99 | deferral=612 | distance=750.647 km | waiting=2320 min | objective=170026.469 | gap_cp=82.25% | runtime=1.085 sec
+active_days=7 | route_duration=4811 min | travel=996 min | service=1495 min | hard_feasible=True
+Daily routes:
+Day 1: stops=18 | distance=41.951 km | travel=59 min | waiting=0 min | service=138 min | duration=197 min | return=21:46 | feasible=True
+  route: DEPOT -> C169 -> C189 -> C188 -> C270 -> C062 -> C234 -> C049 -> C014 -> C125 -> C108 -> C210 -> C202 -> C132 -> C209 -> C267 -> C197 -> C180 -> C142 -> DEPOT
+Day 2: stops=21 | distance=47.594 km | travel=68 min | waiting=612 min | service=146 min | duration=826 min | return=21:39 | feasible=True
+  route: DEPOT -> C140 -> C057 -> C009 -> C280 -> C051 -> C035 -> C181 -> C146 -> C170 -> C040 -> C211 -> C286 -> C011 -> C027 -> C087 -> C226 -> C293 -> C262 -> C114 -> C287 -> C026 -> DEPOT
+Day 3: stops=17 | distance=62.118 km | travel=82 min | waiting=651 min | service=125 min | duration=858 min | return=21:23 | feasible=True
+  route: DEPOT -> C288 -> C184 -> C121 -> C133 -> C250 -> C031 -> C257 -> C043 -> C023 -> C045 -> C237 -> C290 -> C116 -> C193 -> C012 -> C200 -> C036 -> DEPOT
+Day 4: stops=18 | distance=101.968 km | travel=132 min | waiting=506 min | service=132 min | duration=770 min | return=21:44 | feasible=True
+  route: DEPOT -> C201 -> C230 -> C106 -> C186 -> C258 -> C220 -> C083 -> C128 -> C173 -> C281 -> C137 -> C099 -> C113 -> C168 -> C157 -> C104 -> C163 -> C219 -> DEPOT
+Day 5: stops=21 | distance=77.600 km | travel=102 min | waiting=536 min | service=168 min | duration=806 min | return=21:49 | feasible=True
+  route: DEPOT -> C008 -> C228 -> C247 -> C110 -> C054 -> C090 -> C131 -> C190 -> C001 -> C195 -> C261 -> C153 -> C037 -> C127 -> C244 -> C082 -> C042 -> C066 -> C123 -> C118 -> C018 -> DEPOT
+Day 6: stops=67 | distance=236.390 km | travel=317 min | waiting=0 min | service=490 min | duration=807 min | return=21:19 | feasible=True
+  route: DEPOT -> C145 -> C198 -> C103 -> C206 -> C179 -> C107 -> C068 -> C005 -> C144 -> C135 -> C216 -> C208 -> C120 -> C139 -> C274 -> C176 -> C100 -> C050 -> C187 -> C177 -> C138 -> C299 -> C264 -> C044 -> C109 -> C246 -> C266 -> C252 -> C148 -> C284 -> C155 -> C272 -> C249 -> C094 -> C224 -> C003 -> C065 -> C112 -> C105 -> C182 -> C141 -> C147 -> C213 -> C222 -> C074 -> C227 -> C159 -> C185 -> C263 -> C047 -> C004 -> C093 -> C282 -> C172 -> C165 -> C259 -> C080 -> C191 -> C089 -> C097 -> C253 -> C207 -> C067 -> C225 -> C199 -> C248 -> C164 -> DEPOT
+Day 7: stops=39 | distance=183.027 km | travel=236 min | waiting=15 min | service=296 min | duration=547 min | return=17:16 | feasible=True
+  route: DEPOT -> C033 -> C017 -> C024 -> C205 -> C058 -> C088 -> C251 -> C064 -> C019 -> C013 -> C212 -> C029 -> C079 -> C196 -> C240 -> C279 -> C020 -> C021 -> C292 -> C298 -> C136 -> C161 -> C022 -> C025 -> C256 -> C092 -> C052 -> C215 -> C032 -> C126 -> C160 -> C254 -> C149 -> C075 -> C111 -> C028 -> C178 -> C277 -> C273 -> DEPOT
+
+====================================================================================================
+MODEL: deadline [BASELINE]
+delivered=286 | incomplete=14 | deferral=537 | distance=1994.187 km | waiting=387 min | objective=88028.873 | gap_cp=-5.64% | runtime=2.469 sec
+active_days=7 | route_duration=5019 min | travel=2522 min | service=2110 min | hard_feasible=True
+Daily routes:
+Day 1: stops=50 | distance=323.792 km | travel=410 min | waiting=0 min | service=389 min | duration=799 min | return=21:43 | feasible=True
+  route: DEPOT -> C057 -> C055 -> C053 -> C134 -> C276 -> C122 -> C194 -> C061 -> C214 -> C056 -> C071 -> C072 -> C204 -> C294 -> C218 -> C297 -> C171 -> C251 -> C017 -> C106 -> C022 -> C178 -> C005 -> C148 -> C179 -> C215 -> C254 -> C144 -> C135 -> C216 -> C150 -> C152 -> C243 -> C206 -> C052 -> C249 -> C184 -> C033 -> C222 -> C074 -> C076 -> C133 -> C085 -> C031 -> C114 -> C257 -> C043 -> C088 -> C233 -> C058 -> DEPOT
+Day 2: stops=52 | distance=350.814 km | travel=443 min | waiting=0 min | service=367 min | duration=810 min | return=21:53 | feasible=True
+  route: DEPOT -> C008 -> C228 -> C175 -> C186 -> C130 -> C002 -> C156 -> C245 -> C102 -> C073 -> C039 -> C238 -> C187 -> C231 -> C266 -> C003 -> C021 -> C141 -> C015 -> C147 -> C201 -> C107 -> C100 -> C274 -> C030 -> C059 -> C236 -> C054 -> C140 -> C160 -> C126 -> C025 -> C075 -> C300 -> C253 -> C097 -> C066 -> C259 -> C080 -> C091 -> C292 -> C007 -> C020 -> C164 -> C279 -> C240 -> C235 -> C295 -> C136 -> C123 -> C165 -> C199 -> DEPOT
+Day 3: stops=47 | distance=370.775 km | travel=468 min | waiting=0 min | service=342 min | duration=810 min | return=21:46 | feasible=True
+  route: DEPOT -> C086 -> C034 -> C041 -> C296 -> C269 -> C154 -> C167 -> C115 -> C129 -> C192 -> C247 -> C084 -> C060 -> C288 -> C275 -> C182 -> C284 -> C224 -> C252 -> C068 -> C032 -> C092 -> C044 -> C162 -> C069 -> C265 -> C217 -> C110 -> C078 -> C013 -> C101 -> C282 -> C172 -> C191 -> C089 -> C118 -> C018 -> C207 -> C028 -> C177 -> C050 -> C195 -> C001 -> C197 -> C049 -> C014 -> C062 -> DEPOT
+Day 4: stops=48 | distance=269.421 km | travel=345 min | waiting=91 min | service=371 min | duration=807 min | return=21:41 | feasible=True
+  route: DEPOT -> C096 -> C158 -> C166 -> C063 -> C081 -> C229 -> C291 -> C143 -> C174 -> C283 -> C255 -> C223 -> C010 -> C221 -> C260 -> C241 -> C161 -> C198 -> C246 -> C205 -> C258 -> C256 -> C227 -> C016 -> C038 -> C271 -> C239 -> C242 -> C232 -> C124 -> C285 -> C046 -> C095 -> C093 -> C149 -> C289 -> C298 -> C248 -> C225 -> C067 -> C111 -> C267 -> C278 -> C132 -> C190 -> C202 -> C210 -> C090 -> DEPOT
+Day 5: stops=29 | distance=246.111 km | travel=306 min | waiting=296 min | service=191 min | duration=793 min | return=21:26 | feasible=True
+  route: DEPOT -> C203 -> C119 -> C098 -> C006 -> C183 -> C070 -> C117 -> C176 -> C230 -> C077 -> C024 -> C045 -> C146 -> C170 -> C181 -> C290 -> C105 -> C286 -> C094 -> C155 -> C272 -> C287 -> C023 -> C226 -> C012 -> C193 -> C293 -> C213 -> C250 -> DEPOT
+Day 6: stops=38 | distance=245.526 km | travel=313 min | waiting=0 min | service=282 min | duration=595 min | return=18:58 | feasible=True
+  route: DEPOT -> C112 -> C264 -> C108 -> C125 -> C209 -> C103 -> C188 -> C153 -> C037 -> C127 -> C157 -> C208 -> C120 -> C139 -> C299 -> C138 -> C145 -> C036 -> C169 -> C009 -> C280 -> C051 -> C035 -> C065 -> C237 -> C027 -> C087 -> C116 -> C026 -> C121 -> C220 -> C137 -> C109 -> C004 -> C047 -> C263 -> C159 -> C185 -> DEPOT
+Day 7: stops=22 | distance=187.749 km | travel=237 min | waiting=0 min | service=168 min | duration=405 min | return=14:42 | feasible=True
+  route: DEPOT -> C189 -> C011 -> C019 -> C064 -> C262 -> C200 -> C079 -> C196 -> C261 -> C142 -> C104 -> C219 -> C234 -> C113 -> C082 -> C244 -> C042 -> C277 -> C273 -> C173 -> C212 -> C029 -> DEPOT
+
+====================================================================================================
+MODEL: min_deferral [BASELINE]
+delivered=300 | incomplete=0 | deferral=568 | distance=1759.814 km | waiting=818 min | objective=75216.135 | gap_cp=-19.38% | runtime=109.059 sec
+active_days=7 | route_duration=5304 min | travel=2260 min | service=2226 min | hard_feasible=True
+Daily routes:
+Day 1: stops=60 | distance=327.459 km | travel=417 min | waiting=5 min | service=463 min | duration=885 min | return=21:52 | feasible=True
+  route: DEPOT -> C106 -> C107 -> C144 -> C005 -> C228 -> C247 -> C174 -> C179 -> C143 -> C119 -> C152 -> C243 -> C081 -> C265 -> C158 -> C154 -> C283 -> C098 -> C151 -> C073 -> C178 -> C254 -> C052 -> C078 -> C224 -> C251 -> C016 -> C171 -> C048 -> C117 -> C296 -> C214 -> C056 -> C061 -> C194 -> C122 -> C276 -> C134 -> C053 -> C218 -> C288 -> C175 -> C249 -> C033 -> C205 -> C222 -> C085 -> C031 -> C257 -> C088 -> C233 -> C064 -> C058 -> C065 -> C040 -> C019 -> C079 -> C268 -> C289 -> C149 -> DEPOT
+Day 2: stops=59 | distance=346.990 km | travel=447 min | waiting=4 min | service=419 min | duration=870 min | return=21:31 | feasible=True
+  route: DEPOT -> C187 -> C013 -> C140 -> C057 -> C055 -> C245 -> C015 -> C294 -> C002 -> C130 -> C156 -> C204 -> C071 -> C072 -> C102 -> C039 -> C238 -> C260 -> C183 -> C256 -> C300 -> C198 -> C231 -> C217 -> C274 -> C176 -> C021 -> C124 -> C006 -> C223 -> C255 -> C063 -> C269 -> C203 -> C030 -> C236 -> C059 -> C229 -> C069 -> C291 -> C060 -> C162 -> C008 -> C054 -> C075 -> C126 -> C215 -> C025 -> C168 -> C278 -> C097 -> C295 -> C240 -> C074 -> C114 -> C051 -> C170 -> C211 -> C169 -> DEPOT
+Day 3: stops=51 | distance=361.277 km | travel=461 min | waiting=30 min | service=374 min | duration=865 min | return=21:39 | feasible=True
+  route: DEPOT -> C284 -> C184 -> C252 -> C258 -> C186 -> C041 -> C034 -> C297 -> C017 -> C086 -> C271 -> C038 -> C032 -> C070 -> C241 -> C242 -> C239 -> C112 -> C266 -> C068 -> C232 -> C285 -> C046 -> C275 -> C221 -> C010 -> C201 -> C192 -> C129 -> C264 -> C084 -> C150 -> C216 -> C115 -> C167 -> C166 -> C110 -> C101 -> C177 -> C139 -> C299 -> C273 -> C099 -> C014 -> C049 -> C062 -> C131 -> C036 -> C116 -> C023 -> C280 -> DEPOT
+Day 4: stops=32 | distance=195.894 km | travel=251 min | waiting=262 min | service=237 min | duration=750 min | return=21:43 | feasible=True
+  route: DEPOT -> C022 -> C161 -> C092 -> C160 -> C227 -> C147 -> C003 -> C141 -> C182 -> C148 -> C230 -> C077 -> C246 -> C044 -> C135 -> C206 -> C100 -> C096 -> C267 -> C197 -> C001 -> C163 -> C157 -> C270 -> C128 -> C281 -> C121 -> C009 -> C250 -> C287 -> C237 -> C011 -> DEPOT
+Day 5: stops=10 | distance=147.056 km | travel=180 min | waiting=517 min | service=78 min | duration=775 min | return=21:49 | feasible=True
+  route: DEPOT -> C024 -> C083 -> C076 -> C045 -> C181 -> C235 -> C095 -> C007 -> C091 -> C180 -> DEPOT
+Day 6: stops=54 | distance=192.979 km | travel=261 min | waiting=0 min | service=399 min | duration=660 min | return=18:52 | feasible=True
+  route: DEPOT -> C145 -> C263 -> C159 -> C185 -> C047 -> C004 -> C067 -> C225 -> C199 -> C093 -> C282 -> C248 -> C164 -> C172 -> C165 -> C123 -> C259 -> C191 -> C080 -> C066 -> C089 -> C253 -> C018 -> C207 -> C138 -> C050 -> C195 -> C209 -> C132 -> C125 -> C120 -> C208 -> C037 -> C109 -> C127 -> C153 -> C090 -> C108 -> C103 -> C188 -> C137 -> C220 -> C155 -> C272 -> C026 -> C043 -> C213 -> C226 -> C087 -> C027 -> C094 -> C035 -> C290 -> C105 -> DEPOT
+Day 7: stops=34 | distance=188.158 km | travel=243 min | waiting=0 min | service=256 min | duration=499 min | return=16:01 | feasible=True
+  route: DEPOT -> C133 -> C212 -> C029 -> C293 -> C012 -> C193 -> C146 -> C286 -> C262 -> C200 -> C196 -> C111 -> C118 -> C136 -> C298 -> C292 -> C020 -> C279 -> C028 -> C190 -> C210 -> C234 -> C113 -> C082 -> C244 -> C277 -> C042 -> C104 -> C142 -> C261 -> C219 -> C202 -> C173 -> C189 -> DEPOT
+
+====================================================================================================
+MODEL: regret_dispatch
+delivered=300 | incomplete=0 | deferral=549 | distance=1486.680 km | waiting=1155 min | objective=70921.801 | gap_cp=-23.98% | runtime=143.856 sec
+active_days=7 | route_duration=5319 min | travel=1938 min | service=2226 min | hard_feasible=True
+Daily routes:
+Day 1: stops=59 | distance=222.440 km | travel=295 min | waiting=74 min | service=463 min | duration=832 min | return=20:59 | feasible=True
+  route: DEPOT -> C106 -> C284 -> C182 -> C017 -> C055 -> C061 -> C214 -> C056 -> C057 -> C288 -> C148 -> C218 -> C294 -> C053 -> C134 -> C276 -> C122 -> C251 -> C171 -> C016 -> C078 -> C075 -> C254 -> C022 -> C025 -> C215 -> C052 -> C032 -> C239 -> C151 -> C098 -> C283 -> C178 -> C063 -> C154 -> C158 -> C265 -> C081 -> C243 -> C152 -> C143 -> C206 -> C174 -> C247 -> C228 -> C175 -> C266 -> C184 -> C085 -> C222 -> C233 -> C088 -> C257 -> C058 -> C065 -> C040 -> C019 -> C169 -> C189 -> DEPOT
+Day 2: stops=70 | distance=243.372 km | travel=325 min | waiting=52 min | service=496 min | duration=873 min | return=21:31 | feasible=True
+  route: DEPOT -> C013 -> C003 -> C033 -> C141 -> C201 -> C015 -> C245 -> C194 -> C002 -> C130 -> C156 -> C204 -> C071 -> C072 -> C102 -> C073 -> C039 -> C238 -> C183 -> C021 -> C256 -> C161 -> C300 -> C176 -> C274 -> C100 -> C217 -> C187 -> C269 -> C198 -> C203 -> C030 -> C231 -> C229 -> C069 -> C291 -> C059 -> C236 -> C107 -> C068 -> C179 -> C054 -> C110 -> C005 -> C060 -> C162 -> C119 -> C008 -> C140 -> C160 -> C126 -> C009 -> C280 -> C051 -> C094 -> C114 -> C287 -> C026 -> C035 -> C181 -> C146 -> C170 -> C226 -> C293 -> C262 -> C087 -> C027 -> C211 -> C286 -> C011 -> DEPOT
+Day 3: stops=51 | distance=298.016 km | travel=388 min | waiting=119 min | service=380 min | duration=887 min | return=21:42 | feasible=True
+  route: DEPOT -> C246 -> C258 -> C252 -> C186 -> C296 -> C041 -> C034 -> C297 -> C205 -> C224 -> C086 -> C271 -> C260 -> C241 -> C070 -> C038 -> C112 -> C101 -> C092 -> C232 -> C285 -> C124 -> C046 -> C275 -> C223 -> C006 -> C221 -> C010 -> C167 -> C192 -> C129 -> C264 -> C044 -> C135 -> C216 -> C150 -> C084 -> C115 -> C166 -> C235 -> C263 -> C200 -> C036 -> C131 -> C108 -> C234 -> C062 -> C049 -> C014 -> C099 -> C281 -> DEPOT
+Day 4: stops=22 | distance=207.266 km | travel=262 min | waiting=392 min | service=169 min | duration=823 min | return=21:45 | feasible=True
+  route: DEPOT -> C077 -> C230 -> C249 -> C147 -> C048 -> C227 -> C242 -> C255 -> C096 -> C144 -> C168 -> C270 -> C163 -> C278 -> C028 -> C289 -> C091 -> C007 -> C095 -> C111 -> C237 -> C250 -> DEPOT
+Day 5: stops=11 | distance=152.014 km | travel=188 min | waiting=518 min | service=80 min | duration=786 min | return=22:00 | feasible=True
+  route: DEPOT -> C024 -> C117 -> C076 -> C023 -> C268 -> C295 -> C180 -> C125 -> C137 -> C128 -> C083 -> DEPOT
+Day 6: stops=52 | distance=185.328 km | travel=248 min | waiting=0 min | service=381 min | duration=629 min | return=18:21 | feasible=True
+  route: DEPOT -> C145 -> C103 -> C188 -> C209 -> C132 -> C090 -> C153 -> C157 -> C109 -> C127 -> C037 -> C208 -> C299 -> C120 -> C139 -> C195 -> C050 -> C177 -> C138 -> C253 -> C207 -> C067 -> C018 -> C097 -> C089 -> C066 -> C080 -> C191 -> C259 -> C123 -> C165 -> C172 -> C164 -> C248 -> C282 -> C093 -> C199 -> C225 -> C004 -> C047 -> C185 -> C159 -> C116 -> C105 -> C290 -> C272 -> C155 -> C043 -> C213 -> C074 -> C220 -> C121 -> DEPOT
+Day 7: stops=35 | distance=178.244 km | travel=232 min | waiting=0 min | service=257 min | duration=489 min | return=15:51 | feasible=True
+  route: DEPOT -> C133 -> C212 -> C029 -> C031 -> C045 -> C012 -> C064 -> C193 -> C079 -> C196 -> C240 -> C279 -> C020 -> C292 -> C298 -> C136 -> C118 -> C149 -> C267 -> C197 -> C001 -> C219 -> C261 -> C142 -> C104 -> C042 -> C277 -> C273 -> C244 -> C082 -> C113 -> C210 -> C190 -> C202 -> C173 -> DEPOT
+
+====================================================================================================
+MODEL: regret_dispatch_ls
+delivered=300 | incomplete=0 | deferral=549 | distance=1486.680 km | waiting=1155 min | objective=70921.801 | gap_cp=-23.98% | runtime=144.217 sec
+active_days=7 | route_duration=5319 min | travel=1938 min | service=2226 min | hard_feasible=True
+Daily routes:
+Day 1: stops=59 | distance=222.440 km | travel=295 min | waiting=74 min | service=463 min | duration=832 min | return=20:59 | feasible=True
+  route: DEPOT -> C106 -> C284 -> C182 -> C017 -> C055 -> C061 -> C214 -> C056 -> C057 -> C288 -> C148 -> C218 -> C294 -> C053 -> C134 -> C276 -> C122 -> C251 -> C171 -> C016 -> C078 -> C075 -> C254 -> C022 -> C025 -> C215 -> C052 -> C032 -> C239 -> C151 -> C098 -> C283 -> C178 -> C063 -> C154 -> C158 -> C265 -> C081 -> C243 -> C152 -> C143 -> C206 -> C174 -> C247 -> C228 -> C175 -> C266 -> C184 -> C085 -> C222 -> C233 -> C088 -> C257 -> C058 -> C065 -> C040 -> C019 -> C169 -> C189 -> DEPOT
+Day 2: stops=70 | distance=243.372 km | travel=325 min | waiting=52 min | service=496 min | duration=873 min | return=21:31 | feasible=True
+  route: DEPOT -> C013 -> C003 -> C033 -> C141 -> C201 -> C015 -> C245 -> C194 -> C002 -> C130 -> C156 -> C204 -> C071 -> C072 -> C102 -> C073 -> C039 -> C238 -> C183 -> C021 -> C256 -> C161 -> C300 -> C176 -> C274 -> C100 -> C217 -> C187 -> C269 -> C198 -> C203 -> C030 -> C231 -> C229 -> C069 -> C291 -> C059 -> C236 -> C107 -> C068 -> C179 -> C054 -> C110 -> C005 -> C060 -> C162 -> C119 -> C008 -> C140 -> C160 -> C126 -> C009 -> C280 -> C051 -> C094 -> C114 -> C287 -> C026 -> C035 -> C181 -> C146 -> C170 -> C226 -> C293 -> C262 -> C087 -> C027 -> C211 -> C286 -> C011 -> DEPOT
+Day 3: stops=51 | distance=298.016 km | travel=388 min | waiting=119 min | service=380 min | duration=887 min | return=21:42 | feasible=True
+  route: DEPOT -> C246 -> C258 -> C252 -> C186 -> C296 -> C041 -> C034 -> C297 -> C205 -> C224 -> C086 -> C271 -> C260 -> C241 -> C070 -> C038 -> C112 -> C101 -> C092 -> C232 -> C285 -> C124 -> C046 -> C275 -> C223 -> C006 -> C221 -> C010 -> C167 -> C192 -> C129 -> C264 -> C044 -> C135 -> C216 -> C150 -> C084 -> C115 -> C166 -> C235 -> C263 -> C200 -> C036 -> C131 -> C108 -> C234 -> C062 -> C049 -> C014 -> C099 -> C281 -> DEPOT
+Day 4: stops=22 | distance=207.266 km | travel=262 min | waiting=392 min | service=169 min | duration=823 min | return=21:45 | feasible=True
+  route: DEPOT -> C077 -> C230 -> C249 -> C147 -> C048 -> C227 -> C242 -> C255 -> C096 -> C144 -> C168 -> C270 -> C163 -> C278 -> C028 -> C289 -> C091 -> C007 -> C095 -> C111 -> C237 -> C250 -> DEPOT
+Day 5: stops=11 | distance=152.014 km | travel=188 min | waiting=518 min | service=80 min | duration=786 min | return=22:00 | feasible=True
+  route: DEPOT -> C024 -> C117 -> C076 -> C023 -> C268 -> C295 -> C180 -> C125 -> C137 -> C128 -> C083 -> DEPOT
+Day 6: stops=52 | distance=185.328 km | travel=248 min | waiting=0 min | service=381 min | duration=629 min | return=18:21 | feasible=True
+  route: DEPOT -> C145 -> C103 -> C188 -> C209 -> C132 -> C090 -> C153 -> C157 -> C109 -> C127 -> C037 -> C208 -> C299 -> C120 -> C139 -> C195 -> C050 -> C177 -> C138 -> C253 -> C207 -> C067 -> C018 -> C097 -> C089 -> C066 -> C080 -> C191 -> C259 -> C123 -> C165 -> C172 -> C164 -> C248 -> C282 -> C093 -> C199 -> C225 -> C004 -> C047 -> C185 -> C159 -> C116 -> C105 -> C290 -> C272 -> C155 -> C043 -> C213 -> C074 -> C220 -> C121 -> DEPOT
+Day 7: stops=35 | distance=178.244 km | travel=232 min | waiting=0 min | service=257 min | duration=489 min | return=15:51 | feasible=True
+  route: DEPOT -> C133 -> C212 -> C029 -> C031 -> C045 -> C012 -> C064 -> C193 -> C079 -> C196 -> C240 -> C279 -> C020 -> C292 -> C298 -> C136 -> C118 -> C149 -> C267 -> C197 -> C001 -> C219 -> C261 -> C142 -> C104 -> C042 -> C277 -> C273 -> C244 -> C082 -> C113 -> C210 -> C190 -> C202 -> C173 -> DEPOT
+
+====================================================================================================
+MODEL: inferior_insertion_ls
+delivered=300 | incomplete=0 | deferral=622 | distance=1577.099 km | waiting=877 min | objective=78847.992 | gap_cp=-15.48% | runtime=122.605 sec
+active_days=7 | route_duration=5155 min | travel=2052 min | service=2226 min | hard_feasible=True
+Daily routes:
+Day 1: stops=54 | distance=346.891 km | travel=445 min | waiting=5 min | service=410 min | duration=860 min | return=21:55 | feasible=True
+  route: DEPOT -> C005 -> C144 -> C135 -> C216 -> C152 -> C243 -> C291 -> C081 -> C158 -> C296 -> C117 -> C048 -> C222 -> C251 -> C205 -> C254 -> C022 -> C025 -> C178 -> C179 -> C266 -> C077 -> C119 -> C143 -> C283 -> C255 -> C223 -> C006 -> C215 -> C241 -> C052 -> C260 -> C221 -> C010 -> C098 -> C151 -> C038 -> C239 -> C032 -> C075 -> C112 -> C078 -> C079 -> C185 -> C196 -> C047 -> C240 -> C268 -> C235 -> C298 -> C289 -> C042 -> C277 -> C273 -> DEPOT
+Day 2: stops=50 | distance=336.480 km | travel=431 min | waiting=34 min | service=348 min | duration=813 min | return=21:46 | feasible=True
+  route: DEPOT -> C203 -> C187 -> C231 -> C229 -> C069 -> C060 -> C162 -> C246 -> C175 -> C015 -> C002 -> C147 -> C156 -> C130 -> C258 -> C252 -> C227 -> C126 -> C271 -> C160 -> C039 -> C238 -> C256 -> C183 -> C124 -> C021 -> C046 -> C161 -> C073 -> C274 -> C059 -> C030 -> C100 -> C186 -> C140 -> C284 -> C300 -> C295 -> C123 -> C259 -> C091 -> C292 -> C007 -> C020 -> C164 -> C279 -> C159 -> C040 -> C074 -> C085 -> DEPOT
+Day 3: stops=52 | distance=284.484 km | travel=369 min | waiting=129 min | service=377 min | duration=875 min | return=21:44 | feasible=True
+  route: DEPOT -> C184 -> C288 -> C148 -> C182 -> C245 -> C053 -> C134 -> C141 -> C041 -> C034 -> C297 -> C204 -> C071 -> C171 -> C102 -> C070 -> C101 -> C242 -> C285 -> C232 -> C275 -> C092 -> C201 -> C224 -> C017 -> C013 -> C003 -> C194 -> C154 -> C176 -> C166 -> C265 -> C217 -> C115 -> C236 -> C068 -> C150 -> C084 -> C044 -> C264 -> C192 -> C269 -> C247 -> C110 -> C014 -> C099 -> C282 -> C211 -> C029 -> C212 -> C076 -> C257 -> DEPOT
+Day 4: stops=32 | distance=186.774 km | travel=244 min | waiting=277 min | service=267 min | duration=788 min | return=21:57 | feasible=True
+  route: DEPOT -> C106 -> C230 -> C057 -> C249 -> C218 -> C294 -> C033 -> C086 -> C055 -> C056 -> C214 -> C072 -> C016 -> C198 -> C054 -> C174 -> C206 -> C129 -> C167 -> C096 -> C063 -> C248 -> C095 -> C165 -> C136 -> C089 -> C278 -> C270 -> C168 -> C109 -> C281 -> C083 -> DEPOT
+Day 5: stops=20 | distance=138.723 km | travel=176 min | waiting=432 min | service=143 min | duration=751 min | return=21:56 | feasible=True
+  route: DEPOT -> C107 -> C228 -> C008 -> C061 -> C024 -> C276 -> C122 -> C170 -> C023 -> C233 -> C287 -> C250 -> C128 -> C137 -> C131 -> C180 -> C142 -> C163 -> C066 -> C172 -> DEPOT
+Day 6: stops=57 | distance=161.639 km | travel=222 min | waiting=0 min | service=407 min | duration=629 min | return=18:28 | feasible=True
+  route: DEPOT -> C169 -> C145 -> C103 -> C188 -> C209 -> C132 -> C125 -> C108 -> C090 -> C062 -> C049 -> C157 -> C127 -> C037 -> C208 -> C153 -> C120 -> C299 -> C139 -> C195 -> C050 -> C177 -> C138 -> C253 -> C097 -> C080 -> C191 -> C093 -> C199 -> C018 -> C207 -> C067 -> C225 -> C004 -> C263 -> C036 -> C116 -> C027 -> C087 -> C237 -> C181 -> C065 -> C226 -> C213 -> C043 -> C026 -> C155 -> C272 -> C094 -> C035 -> C051 -> C290 -> C105 -> C009 -> C280 -> C121 -> C220 -> DEPOT
+Day 7: stops=35 | distance=122.107 km | travel=165 min | waiting=0 min | service=274 min | duration=439 min | return=15:01 | feasible=True
+  route: DEPOT -> C133 -> C031 -> C114 -> C088 -> C058 -> C045 -> C146 -> C286 -> C011 -> C019 -> C193 -> C012 -> C064 -> C293 -> C262 -> C200 -> C111 -> C118 -> C149 -> C028 -> C267 -> C197 -> C001 -> C219 -> C261 -> C104 -> C244 -> C082 -> C113 -> C234 -> C210 -> C190 -> C202 -> C173 -> C189 -> DEPOT
+
+====================================================================================================
+MODEL: inferior_insertion
+delivered=300 | incomplete=0 | deferral=622 | distance=1577.099 km | waiting=877 min | objective=78847.992 | gap_cp=-15.48% | runtime=122.755 sec
+active_days=7 | route_duration=5155 min | travel=2052 min | service=2226 min | hard_feasible=True
+Daily routes:
+Day 1: stops=54 | distance=346.891 km | travel=445 min | waiting=5 min | service=410 min | duration=860 min | return=21:55 | feasible=True
+  route: DEPOT -> C005 -> C144 -> C135 -> C216 -> C152 -> C243 -> C291 -> C081 -> C158 -> C296 -> C117 -> C048 -> C222 -> C251 -> C205 -> C254 -> C022 -> C025 -> C178 -> C179 -> C266 -> C077 -> C119 -> C143 -> C283 -> C255 -> C223 -> C006 -> C215 -> C241 -> C052 -> C260 -> C221 -> C010 -> C098 -> C151 -> C038 -> C239 -> C032 -> C075 -> C112 -> C078 -> C079 -> C185 -> C196 -> C047 -> C240 -> C268 -> C235 -> C298 -> C289 -> C042 -> C277 -> C273 -> DEPOT
+Day 2: stops=50 | distance=336.480 km | travel=431 min | waiting=34 min | service=348 min | duration=813 min | return=21:46 | feasible=True
+  route: DEPOT -> C203 -> C187 -> C231 -> C229 -> C069 -> C060 -> C162 -> C246 -> C175 -> C015 -> C002 -> C147 -> C156 -> C130 -> C258 -> C252 -> C227 -> C126 -> C271 -> C160 -> C039 -> C238 -> C256 -> C183 -> C124 -> C021 -> C046 -> C161 -> C073 -> C274 -> C059 -> C030 -> C100 -> C186 -> C140 -> C284 -> C300 -> C295 -> C123 -> C259 -> C091 -> C292 -> C007 -> C020 -> C164 -> C279 -> C159 -> C040 -> C074 -> C085 -> DEPOT
+Day 3: stops=52 | distance=284.484 km | travel=369 min | waiting=129 min | service=377 min | duration=875 min | return=21:44 | feasible=True
+  route: DEPOT -> C184 -> C288 -> C148 -> C182 -> C245 -> C053 -> C134 -> C141 -> C041 -> C034 -> C297 -> C204 -> C071 -> C171 -> C102 -> C070 -> C101 -> C242 -> C285 -> C232 -> C275 -> C092 -> C201 -> C224 -> C017 -> C013 -> C003 -> C194 -> C154 -> C176 -> C166 -> C265 -> C217 -> C115 -> C236 -> C068 -> C150 -> C084 -> C044 -> C264 -> C192 -> C269 -> C247 -> C110 -> C014 -> C099 -> C282 -> C211 -> C029 -> C212 -> C076 -> C257 -> DEPOT
+Day 4: stops=32 | distance=186.774 km | travel=244 min | waiting=277 min | service=267 min | duration=788 min | return=21:57 | feasible=True
+  route: DEPOT -> C106 -> C230 -> C057 -> C249 -> C218 -> C294 -> C033 -> C086 -> C055 -> C056 -> C214 -> C072 -> C016 -> C198 -> C054 -> C174 -> C206 -> C129 -> C167 -> C096 -> C063 -> C248 -> C095 -> C165 -> C136 -> C089 -> C278 -> C270 -> C168 -> C109 -> C281 -> C083 -> DEPOT
+Day 5: stops=20 | distance=138.723 km | travel=176 min | waiting=432 min | service=143 min | duration=751 min | return=21:56 | feasible=True
+  route: DEPOT -> C107 -> C228 -> C008 -> C061 -> C024 -> C276 -> C122 -> C170 -> C023 -> C233 -> C287 -> C250 -> C128 -> C137 -> C131 -> C180 -> C142 -> C163 -> C066 -> C172 -> DEPOT
+Day 6: stops=57 | distance=161.639 km | travel=222 min | waiting=0 min | service=407 min | duration=629 min | return=18:28 | feasible=True
+  route: DEPOT -> C169 -> C145 -> C103 -> C188 -> C209 -> C132 -> C125 -> C108 -> C090 -> C062 -> C049 -> C157 -> C127 -> C037 -> C208 -> C153 -> C120 -> C299 -> C139 -> C195 -> C050 -> C177 -> C138 -> C253 -> C097 -> C080 -> C191 -> C093 -> C199 -> C018 -> C207 -> C067 -> C225 -> C004 -> C263 -> C036 -> C116 -> C027 -> C087 -> C237 -> C181 -> C065 -> C226 -> C213 -> C043 -> C026 -> C155 -> C272 -> C094 -> C035 -> C051 -> C290 -> C105 -> C009 -> C280 -> C121 -> C220 -> DEPOT
+Day 7: stops=35 | distance=122.107 km | travel=165 min | waiting=0 min | service=274 min | duration=439 min | return=15:01 | feasible=True
+  route: DEPOT -> C133 -> C031 -> C114 -> C088 -> C058 -> C045 -> C146 -> C286 -> C011 -> C019 -> C193 -> C012 -> C064 -> C293 -> C262 -> C200 -> C111 -> C118 -> C149 -> C028 -> C267 -> C197 -> C001 -> C219 -> C261 -> C104 -> C244 -> C082 -> C113 -> C234 -> C210 -> C190 -> C202 -> C173 -> C189 -> DEPOT
+
+====================================================================================================
+MODEL: hybrid_genetic_vns
+delivered=297 | incomplete=3 | deferral=601 | distance=1586.262 km | waiting=1063 min | objective=80025.616 | gap_cp=-14.22% | runtime=164.617 sec
+active_days=7 | route_duration=5327 min | travel=2057 min | service=2207 min | hard_feasible=True
+Daily routes:
+Day 1: stops=53 | distance=272.123 km | travel=352 min | waiting=106 min | service=423 min | duration=881 min | return=21:44 | feasible=True
+  route: DEPOT -> C179 -> C216 -> C107 -> C056 -> C061 -> C214 -> C218 -> C053 -> C134 -> C276 -> C122 -> C296 -> C117 -> C048 -> C251 -> C171 -> C016 -> C078 -> C075 -> C178 -> C254 -> C032 -> C052 -> C151 -> C098 -> C022 -> C283 -> C073 -> C154 -> C158 -> C265 -> C081 -> C243 -> C152 -> C119 -> C143 -> C206 -> C174 -> C247 -> C228 -> C175 -> C288 -> C085 -> C257 -> C233 -> C058 -> C040 -> C019 -> C268 -> C289 -> C180 -> C014 -> C270 -> DEPOT
+Day 2: stops=53 | distance=312.131 km | travel=403 min | waiting=20 min | service=375 min | duration=798 min | return=21:41 | feasible=True
+  route: DEPOT -> C008 -> C201 -> C186 -> C130 -> C156 -> C002 -> C015 -> C245 -> C102 -> C006 -> C046 -> C021 -> C124 -> C183 -> C227 -> C013 -> C112 -> C003 -> C033 -> C140 -> C198 -> C269 -> C054 -> C068 -> C231 -> C217 -> C203 -> C176 -> C256 -> C238 -> C126 -> C271 -> C039 -> C274 -> C069 -> C229 -> C060 -> C162 -> C025 -> C215 -> C300 -> C278 -> C131 -> C168 -> C163 -> C177 -> C097 -> C295 -> C007 -> C159 -> C211 -> C170 -> C181 -> DEPOT
+Day 3: stops=50 | distance=304.776 km | travel=392 min | waiting=115 min | service=375 min | duration=882 min | return=21:43 | feasible=True
+  route: DEPOT -> C252 -> C192 -> C167 -> C115 -> C236 -> C129 -> C110 -> C005 -> C264 -> C044 -> C084 -> C150 -> C135 -> C059 -> C166 -> C071 -> C205 -> C017 -> C224 -> C284 -> C222 -> C092 -> C260 -> C275 -> C223 -> C010 -> C221 -> C232 -> C285 -> C242 -> C241 -> C101 -> C070 -> C239 -> C038 -> C086 -> C194 -> C204 -> C034 -> C041 -> C029 -> C023 -> C031 -> C116 -> C036 -> C089 -> C208 -> C082 -> C281 -> C121 -> DEPOT
+Day 4: stops=39 | distance=252.902 km | travel=323 min | waiting=282 min | service=286 min | duration=891 min | return=21:50 | feasible=True
+  route: DEPOT -> C246 -> C144 -> C291 -> C030 -> C187 -> C096 -> C100 -> C063 -> C255 -> C161 -> C160 -> C072 -> C147 -> C297 -> C141 -> C182 -> C249 -> C294 -> C055 -> C148 -> C057 -> C184 -> C106 -> C230 -> C258 -> C266 -> C077 -> C083 -> C128 -> C099 -> C109 -> C113 -> C219 -> C190 -> C298 -> C095 -> C248 -> C067 -> C111 -> DEPOT
+Day 5: stops=15 | distance=105.640 km | travel=134 min | waiting=540 min | service=96 min | duration=770 min | return=21:44 | feasible=True
+  route: DEPOT -> C024 -> C076 -> C272 -> C105 -> C200 -> C145 -> C282 -> C235 -> C123 -> C261 -> C142 -> C153 -> C234 -> C125 -> C209 -> DEPOT
+Day 6: stops=52 | distance=172.434 km | travel=236 min | waiting=0 min | service=390 min | duration=626 min | return=18:25 | feasible=True
+  route: DEPOT -> C169 -> C009 -> C280 -> C051 -> C290 -> C035 -> C094 -> C155 -> C026 -> C043 -> C074 -> C213 -> C226 -> C065 -> C237 -> C087 -> C027 -> C263 -> C185 -> C047 -> C164 -> C004 -> C225 -> C199 -> C093 -> C172 -> C165 -> C191 -> C080 -> C259 -> C066 -> C253 -> C018 -> C207 -> C138 -> C050 -> C195 -> C139 -> C120 -> C299 -> C037 -> C127 -> C157 -> C049 -> C062 -> C090 -> C108 -> C132 -> C103 -> C188 -> C137 -> C220 -> DEPOT
+Day 7: stops=35 | distance=166.255 km | travel=217 min | waiting=0 min | service=262 min | duration=479 min | return=15:56 | feasible=True
+  route: DEPOT -> C189 -> C173 -> C273 -> C277 -> C042 -> C244 -> C104 -> C197 -> C001 -> C210 -> C202 -> C267 -> C028 -> C149 -> C118 -> C136 -> C292 -> C020 -> C279 -> C240 -> C196 -> C079 -> C262 -> C193 -> C012 -> C293 -> C064 -> C212 -> C133 -> C088 -> C114 -> C045 -> C146 -> C286 -> C011 -> DEPOT
+
+====================================================================================================
+MODEL: cp_rolling
+delivered=299 | incomplete=1 | deferral=678 | distance=2397.992 km | waiting=514 min | objective=93293.916 | gap_cp=0.00% | runtime=347.655 sec
+active_days=7 | route_duration=5760 min | travel=3030 min | service=2216 min | hard_feasible=True
+Daily routes:
+Day 1: stops=47 | distance=407.935 km | travel=515 min | waiting=12 min | service=356 min | duration=883 min | return=21:54 | feasible=True
+  route: DEPOT -> C284 -> C025 -> C006 -> C038 -> C032 -> C098 -> C010 -> C052 -> C215 -> C143 -> C179 -> C115 -> C158 -> C206 -> C081 -> C063 -> C030 -> C107 -> C187 -> C216 -> C144 -> C266 -> C135 -> C252 -> C222 -> C048 -> C053 -> C110 -> C154 -> C175 -> C061 -> C072 -> C205 -> C182 -> C249 -> C184 -> C277 -> C099 -> C273 -> C180 -> C014 -> C042 -> C268 -> C235 -> C298 -> C149 -> C289 -> DEPOT
+Day 2: stops=47 | distance=392.448 km | travel=496 min | waiting=75 min | service=327 min | duration=898 min | return=21:56 | feasible=True
+  route: DEPOT -> C013 -> C141 -> C033 -> C003 -> C102 -> C017 -> C147 -> C156 -> C204 -> C276 -> C148 -> C055 -> C186 -> C122 -> C194 -> C238 -> C161 -> C126 -> C176 -> C274 -> C231 -> C217 -> C068 -> C255 -> C073 -> C124 -> C075 -> C183 -> C140 -> C002 -> C100 -> C223 -> C236 -> C106 -> C169 -> C051 -> C211 -> C170 -> C040 -> C085 -> C185 -> C159 -> C240 -> C279 -> C164 -> C020 -> C295 -> DEPOT
+Day 3: stops=43 | distance=455.081 km | travel=568 min | waiting=41 min | service=303 min | duration=912 min | return=21:55 | feasible=True
+  route: DEPOT -> C021 -> C288 -> C015 -> C224 -> C134 -> C245 -> C269 -> C060 -> C162 -> C151 -> C218 -> C056 -> C041 -> C160 -> C092 -> C022 -> C275 -> C101 -> C005 -> C150 -> C084 -> C283 -> C285 -> C171 -> C201 -> C260 -> C166 -> C247 -> C078 -> C257 -> C031 -> C114 -> C023 -> C036 -> C062 -> C299 -> C177 -> C292 -> C191 -> C080 -> C091 -> C282 -> C172 -> DEPOT
+Day 4: stops=36 | distance=407.896 km | travel=507 min | waiting=79 min | service=291 min | duration=877 min | return=21:47 | feasible=True
+  route: DEPOT -> C246 -> C198 -> C152 -> C229 -> C059 -> C129 -> C300 -> C071 -> C243 -> C044 -> C174 -> C256 -> C227 -> C251 -> C297 -> C214 -> C046 -> C069 -> C167 -> C291 -> C096 -> C265 -> C221 -> C039 -> C016 -> C112 -> C267 -> C278 -> C281 -> C168 -> C270 -> C163 -> C128 -> C035 -> C237 -> C262 -> DEPOT
+Day 5: stops=27 | distance=317.028 km | travel=394 min | waiting=214 min | service=208 min | duration=816 min | return=22:00 | feasible=True
+  route: DEPOT -> C057 -> C008 -> C228 -> C054 -> C077 -> C271 -> C070 -> C239 -> C241 -> C242 -> C232 -> C192 -> C203 -> C119 -> C296 -> C117 -> C130 -> C034 -> C086 -> C294 -> C287 -> C233 -> C250 -> C076 -> C095 -> C131 -> C083 -> DEPOT
+Day 6: stops=63 | distance=262.667 km | travel=343 min | waiting=57 min | service=453 min | duration=853 min | return=21:03 | feasible=True
+  route: DEPOT -> C024 -> C181 -> C290 -> C105 -> C009 -> C280 -> C094 -> C026 -> C043 -> C155 -> C272 -> C065 -> C226 -> C087 -> C027 -> C116 -> C074 -> C213 -> C121 -> C230 -> C258 -> C220 -> C137 -> C188 -> C103 -> C090 -> C125 -> C254 -> C225 -> C018 -> C207 -> C067 -> C199 -> C165 -> C123 -> C259 -> C089 -> C066 -> C097 -> C253 -> C093 -> C178 -> C138 -> C139 -> C120 -> C153 -> C037 -> C208 -> C127 -> C157 -> C264 -> C108 -> C209 -> C132 -> C050 -> C195 -> C049 -> C109 -> C263 -> C047 -> C004 -> C248 -> C145 -> DEPOT
+Day 7: stops=36 | distance=154.936 km | travel=207 min | waiting=36 min | service=278 min | duration=521 min | return=16:28 | feasible=True
+  route: DEPOT -> C011 -> C286 -> C019 -> C146 -> C045 -> C058 -> C088 -> C133 -> C212 -> C029 -> C064 -> C293 -> C012 -> C193 -> C200 -> C079 -> C196 -> C136 -> C118 -> C111 -> C028 -> C261 -> C142 -> C104 -> C219 -> C197 -> C001 -> C190 -> C202 -> C210 -> C234 -> C113 -> C082 -> C244 -> C173 -> C189 -> DEPOT
+
+====================================================================================================
+MODEL: cp_rolling_repair
+delivered=297 | incomplete=3 | deferral=703 | distance=2561.748 km | waiting=435 min | objective=99352.481 | gap_cp=6.49% | runtime=621.356 sec
+active_days=7 | route_duration=5866 min | travel=3227 min | service=2204 min | hard_feasible=True
+Daily routes:
+Day 1: stops=46 | distance=414.402 km | travel=524 min | waiting=8 min | service=351 min | duration=883 min | return=21:54 | feasible=True
+  route: DEPOT -> C284 -> C252 -> C025 -> C098 -> C010 -> C006 -> C052 -> C206 -> C081 -> C158 -> C215 -> C179 -> C115 -> C107 -> C187 -> C216 -> C144 -> C266 -> C135 -> C038 -> C143 -> C110 -> C154 -> C175 -> C057 -> C184 -> C288 -> C016 -> C061 -> C072 -> C205 -> C033 -> C182 -> C112 -> C078 -> C270 -> C273 -> C180 -> C014 -> C042 -> C268 -> C235 -> C240 -> C298 -> C149 -> C289 -> DEPOT
+Day 2: stops=41 | distance=475.051 km | travel=590 min | waiting=27 min | service=296 min | duration=913 min | return=21:59 | feasible=True
+  route: DEPOT -> C161 -> C140 -> C013 -> C156 -> C021 -> C223 -> C032 -> C162 -> C229 -> C119 -> C069 -> C063 -> C126 -> C300 -> C274 -> C100 -> C068 -> C003 -> C002 -> C194 -> C117 -> C130 -> C141 -> C102 -> C147 -> C046 -> C071 -> C122 -> C075 -> C017 -> C040 -> C051 -> C169 -> C211 -> C170 -> C085 -> C185 -> C159 -> C164 -> C020 -> C279 -> DEPOT
+Day 3: stops=39 | distance=461.039 km | travel=575 min | waiting=21 min | service=297 min | duration=893 min | return=21:48 | feasible=True
+  route: DEPOT -> C246 -> C275 -> C221 -> C283 -> C236 -> C238 -> C073 -> C239 -> C222 -> C296 -> C022 -> C044 -> C101 -> C151 -> C166 -> C245 -> C218 -> C086 -> C053 -> C148 -> C231 -> C269 -> C129 -> C060 -> C167 -> C217 -> C201 -> C080 -> C191 -> C172 -> C282 -> C263 -> C023 -> C031 -> C257 -> C131 -> C062 -> C299 -> C177 -> DEPOT
+Day 4: stops=42 | distance=427.561 km | travel=536 min | waiting=26 min | service=299 min | duration=861 min | return=21:43 | feasible=True
+  route: DEPOT -> C198 -> C251 -> C048 -> C294 -> C055 -> C056 -> C297 -> C034 -> C134 -> C174 -> C054 -> C059 -> C241 -> C285 -> C256 -> C092 -> C227 -> C015 -> C249 -> C106 -> C258 -> C186 -> C260 -> C124 -> C152 -> C150 -> C265 -> C214 -> C039 -> C230 -> C278 -> C067 -> C091 -> C018 -> C111 -> C089 -> C259 -> C093 -> C136 -> C168 -> C099 -> C281 -> DEPOT
+Day 5: stops=28 | distance=349.486 km | travel=433 min | waiting=170 min | service=208 min | duration=811 min | return=21:44 | feasible=True
+  route: DEPOT -> C204 -> C171 -> C192 -> C247 -> C203 -> C228 -> C077 -> C008 -> C041 -> C276 -> C070 -> C232 -> C271 -> C183 -> C096 -> C030 -> C084 -> C243 -> C291 -> C242 -> C255 -> C128 -> C295 -> C095 -> C007 -> C163 -> C076 -> C287 -> DEPOT
+Day 6: stops=62 | distance=244.212 km | travel=320 min | waiting=64 min | service=445 min | duration=829 min | return=20:39 | feasible=True
+  route: DEPOT -> C024 -> C035 -> C224 -> C094 -> C290 -> C181 -> C237 -> C027 -> C087 -> C065 -> C226 -> C043 -> C026 -> C155 -> C272 -> C009 -> C280 -> C105 -> C116 -> C036 -> C145 -> C207 -> C254 -> C199 -> C225 -> C160 -> C165 -> C123 -> C097 -> C253 -> C066 -> C178 -> C138 -> C176 -> C139 -> C120 -> C153 -> C037 -> C127 -> C157 -> C208 -> C005 -> C049 -> C090 -> C125 -> C108 -> C132 -> C050 -> C195 -> C209 -> C103 -> C188 -> C264 -> C137 -> C109 -> C248 -> C004 -> C047 -> C213 -> C074 -> C220 -> C121 -> DEPOT
+Day 7: stops=39 | distance=189.996 km | travel=249 min | waiting=119 min | service=308 min | duration=676 min | return=19:48 | feasible=True
+  route: DEPOT -> C202 -> C197 -> C001 -> C219 -> C261 -> C142 -> C104 -> C277 -> C244 -> C082 -> C113 -> C234 -> C210 -> C190 -> C267 -> C028 -> C118 -> C292 -> C196 -> C079 -> C200 -> C011 -> C286 -> C019 -> C146 -> C045 -> C058 -> C114 -> C088 -> C064 -> C262 -> C193 -> C012 -> C293 -> C029 -> C212 -> C133 -> C173 -> C189 -> DEPOT
+
+====================================================================================================
+MODEL: cp_full_week
+delivered=112 | incomplete=188 | deferral=279 | distance=1553.332 km | waiting=5653 min | objective=237086.317 | gap_cp=154.13% | runtime=331.514 sec
+active_days=7 | route_duration=8404 min | travel=1922 min | service=829 min | hard_feasible=True
+Daily routes:
+Day 1: stops=26 | distance=281.729 km | travel=351 min | waiting=749 min | service=203 min | duration=1303 min | return=21:43 | feasible=True
+  route: DEPOT -> C010 -> C022 -> C182 -> C171 -> C205 -> C276 -> C053 -> C006 -> C247 -> C254 -> C078 -> C025 -> C107 -> C260 -> C005 -> C014 -> C012 -> C040 -> C019 -> C064 -> C290 -> C088 -> C043 -> C133 -> C009 -> C280 -> DEPOT
+Day 2: stops=6 | distance=144.401 km | travel=176 min | waiting=910 min | service=47 min | duration=1133 min | return=18:53 | feasible=True
+  route: DEPOT -> C008 -> C130 -> C054 -> C238 -> C015 -> C001 -> DEPOT
+Day 3: stops=23 | distance=396.683 km | travel=489 min | waiting=647 min | service=172 min | duration=1308 min | return=21:48 | feasible=True
+  route: DEPOT -> C021 -> C275 -> C148 -> C071 -> C052 -> C112 -> C003 -> C046 -> C265 -> C059 -> C034 -> C032 -> C241 -> C264 -> C038 -> C131 -> C197 -> C244 -> C120 -> C121 -> C011 -> C279 -> C062 -> DEPOT
+Day 4: stops=1 | distance=47.330 km | travel=58 min | waiting=1081 min | service=10 min | duration=1149 min | return=19:09 | feasible=True
+  route: DEPOT -> C007 -> DEPOT
+Day 5: stops=3 | distance=81.937 km | travel=100 min | waiting=1048 min | service=20 min | duration=1168 min | return=19:28 | feasible=True
+  route: DEPOT -> C002 -> C153 -> C200 -> DEPOT
+Day 6: stops=29 | distance=347.900 km | travel=430 min | waiting=657 min | service=198 min | duration=1285 min | return=21:25 | feasible=True
+  route: DEPOT -> C051 -> C105 -> C230 -> C155 -> C272 -> C145 -> C036 -> C018 -> C253 -> C177 -> C037 -> C125 -> C195 -> C097 -> C215 -> C225 -> C141 -> C123 -> C237 -> C207 -> C103 -> C282 -> C101 -> C226 -> C066 -> C080 -> C004 -> C067 -> C093 -> DEPOT
+Day 7: stops=24 | distance=253.352 km | travel=318 min | waiting=561 min | service=179 min | duration=1058 min | return=17:38 | feasible=True
+  route: DEPOT -> C187 -> C068 -> C160 -> C199 -> C240 -> C292 -> C178 -> C028 -> C208 -> C110 -> C020 -> C164 -> C136 -> C256 -> C140 -> C224 -> C033 -> C201 -> C108 -> C206 -> C266 -> C031 -> C045 -> C049 -> DEPOT

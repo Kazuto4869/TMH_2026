@@ -1,6 +1,12 @@
 model=nearest
 solver_status=HEURISTIC_FEASIBLE
 gap_percent=
+official_objective=1000 * incomplete + 100 * deferral + 10 * distance + waiting
+objective_value=170026.468645
+incomplete_component=99000.000000
+deferral_component=61200.000000
+distance_component=7506.468645
+waiting_component=2320.000000
 summary
 delivered_count=201
 incomplete_count=99
@@ -13,7 +19,7 @@ number_of_active_days=7
 active_days=7
 total_deferral_days=612
 hard_feasible=True
-objective_value=105130526.468645
+objective_value=170026.468645
 
 daily_routes
 day=1

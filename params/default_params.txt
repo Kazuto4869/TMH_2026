@@ -36,11 +36,11 @@ REQUIRE_RETURN_BEFORE_DAY_END = true
 FLEXIBLE_DEPOT_DEPARTURE = true
 
 [objective]
-WEIGHT_INCOMPLETE = 1000000
-WEIGHT_DEFERRAL = 10000
+WEIGHT_INCOMPLETE = 1000
+WEIGHT_DEFERRAL = 100
 WEIGHT_DISTANCE_KM = 10
 WEIGHT_WAITING_MIN = 1
-WEIGHT_ACTIVE_DAY = 100
+WEIGHT_ACTIVE_DAY = 0
 WEIGHT_ROUTE_DURATION_MIN = 0
 DEFERRAL_DAYS = delivered_day - earliest_available_day
 
@@ -92,5 +92,5 @@ AVG_AVAILABLE_DAYS_PER_CUSTOMER = 3.66
 MAX_AVAILABLE_DAYS_PER_CUSTOMER = 6
 
 [benchmark]
-METRIC_COLUMNS = solver, delivered_count, incomplete_count, active_days, total_deferral_days, total_distance_km, total_travel_time_min, total_waiting_time_min, total_service_time_min, total_route_duration_min, objective_value, runtime_sec, max_day_gap_percent, total_fixed_impossible_arcs, average_fixed_arc_ratio, total_remaining_after_week, hard_feasible
-SORT_BY = incomplete_count, total_deferral_days, total_distance_km, total_waiting_time_min
+METRIC_COLUMNS = solver, delivered_count, incomplete_count, total_deferral_days, total_distance_km, total_waiting_time_min, total_route_duration_min, active_days, objective_value, runtime_sec, hard_feasible
+SORT_BY = objective_value, incomplete_count, total_deferral_days, total_distance_km, total_waiting_time_min, runtime_sec

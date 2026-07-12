@@ -1,8 +1,30 @@
 {
   "solver": "deadline",
+  "objective_version": "weighted_1000_100_10_1",
+  "objective_value": 88028.87308043634,
+  "objective_breakdown": {
+    "incomplete_component": 14000,
+    "deferral_component": 53700,
+    "distance_component": 19941.873080436337,
+    "waiting_component": 387
+  },
+  "runtime_sec": 2.468898300001456,
   "solver_status": {
+    "solver": "deadline",
     "status": "HEURISTIC_FEASIBLE",
-    "gap_percent": ""
+    "gap_percent": "",
+    "objective_version": "weighted_1000_100_10_1",
+    "objective_value": 88028.87308043634,
+    "objective_breakdown": {
+      "incomplete_component": 14000,
+      "deferral_component": 53700,
+      "distance_component": 19941.873080436337,
+      "waiting_component": 387
+    },
+    "incomplete_component": 14000,
+    "deferral_component": 53700,
+    "distance_component": 19941.873080436337,
+    "waiting_component": 387
   },
   "metrics": {
     "delivered_count": 286,
@@ -16,8 +38,16 @@
     "active_days": 7,
     "total_deferral_days": 537,
     "hard_feasible": true,
-    "objective_value": 19391028.873080436,
-    "violations": []
+    "objective_value": 88028.87308043634,
+    "violations": [],
+    "objective_version": "weighted_1000_100_10_1",
+    "objective_breakdown": {
+      "incomplete_component": 14000,
+      "deferral_component": 53700,
+      "distance_component": 19941.873080436337,
+      "waiting_component": 387
+    },
+    "runtime_sec": 2.468898300001456
   },
   "schedule": {
     "routes": [

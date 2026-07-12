@@ -1,8 +1,30 @@
 {
   "solver": "nearest",
+  "objective_version": "weighted_1000_100_10_1",
+  "objective_value": 170026.46864511774,
+  "objective_breakdown": {
+    "incomplete_component": 99000,
+    "deferral_component": 61200,
+    "distance_component": 7506.468645117739,
+    "waiting_component": 2320
+  },
+  "runtime_sec": 1.085381699995196,
   "solver_status": {
+    "solver": "nearest",
     "status": "HEURISTIC_FEASIBLE",
-    "gap_percent": ""
+    "gap_percent": "",
+    "objective_version": "weighted_1000_100_10_1",
+    "objective_value": 170026.46864511774,
+    "objective_breakdown": {
+      "incomplete_component": 99000,
+      "deferral_component": 61200,
+      "distance_component": 7506.468645117739,
+      "waiting_component": 2320
+    },
+    "incomplete_component": 99000,
+    "deferral_component": 61200,
+    "distance_component": 7506.468645117739,
+    "waiting_component": 2320
   },
   "metrics": {
     "delivered_count": 201,
@@ -16,8 +38,16 @@
     "active_days": 7,
     "total_deferral_days": 612,
     "hard_feasible": true,
-    "objective_value": 105130526.46864511,
-    "violations": []
+    "objective_value": 170026.46864511774,
+    "violations": [],
+    "objective_version": "weighted_1000_100_10_1",
+    "objective_breakdown": {
+      "incomplete_component": 99000,
+      "deferral_component": 61200,
+      "distance_component": 7506.468645117739,
+      "waiting_component": 2320
+    },
+    "runtime_sec": 1.085381699995196
   },
   "schedule": {
     "routes": [

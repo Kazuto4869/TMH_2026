@@ -1,6 +1,12 @@
 model=deadline
 solver_status=HEURISTIC_FEASIBLE
 gap_percent=
+official_objective=1000 * incomplete + 100 * deferral + 10 * distance + waiting
+objective_value=88028.873080
+incomplete_component=14000.000000
+deferral_component=53700.000000
+distance_component=19941.873080
+waiting_component=387.000000
 summary
 delivered_count=286
 incomplete_count=14
@@ -13,7 +19,7 @@ number_of_active_days=7
 active_days=7
 total_deferral_days=537
 hard_feasible=True
-objective_value=19391028.873080
+objective_value=88028.873080
 
 daily_routes
 day=1
