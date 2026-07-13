@@ -12,20 +12,19 @@ from vrp_weekly.config import (
 )
 from vrp_weekly.models import (
     EarliestDeadlineSolver,
-    FullWeekCPSATSolver,
-    HybridGeneticVNSSolver,
     InferiorInsertionSolver,
     MinDeferralSolver,
     NearestNeighborSolver,
-    RegretDispatchInsertionSolver,
+    RegretLSInsertionSolver,
     RollingHorizonCPSATSolver,
-    RollingHorizonCPRepairSolver,
 )
 
 
 def create_solver(solver_key: str, **kwargs: Any) -> object:
     """Create a model instance from a CLI or benchmark key."""
     normalized = "deadline" if solver_key == "earliest" else solver_key
+    if normalized not in solver_names():
+        raise ValueError(f"Unsupported solver after cleanup: {solver_key}")
     if normalized == "nearest":
         return NearestNeighborSolver()
     if normalized == "deadline":
@@ -49,22 +48,11 @@ def create_solver(solver_key: str, **kwargs: Any) -> object:
         )
         solver.name = normalized
         return solver
-    if normalized in {"regret_dispatch", "regret_dispatch_ls"}:
-        solver = RegretDispatchInsertionSolver(
-            use_local_search=normalized == "regret_dispatch_ls" or bool(kwargs.get("heuristic_use_local_search", False)),
-            local_search_time_limit_sec=int(kwargs.get("local_search_time_limit_sec", 10)),
-            local_search_max_iterations=int(kwargs.get("local_search_max_iterations", 100)),
-            max_candidates_per_day=kwargs.get("heuristic_max_candidates_per_day"),
-            regret_weight=float(kwargs.get("regret_weight", 1.0)),
-            defer_risk_weight=float(kwargs.get("defer_risk_weight", 1.0)),
-            insertion_cost_weight=float(kwargs.get("insertion_cost_weight", 1.0)),
-            distance_weight=float(kwargs.get("distance_weight", 10.0)),
-            waiting_weight=float(kwargs.get("waiting_weight", 1.0)),
-            duration_weight=0.0,
-            random_seed=int(kwargs.get("heuristic_random_seed", kwargs.get("seed", 1))),
-        )
-        solver.name = normalized
-        return solver
+    if normalized in {"regret_dispatch", "regret_ls"}:
+        if normalized == "regret_ls" or normalized == "regret_dispatch":
+            solver = RegretLSInsertionSolver()
+            solver.name = normalized
+            return solver
     if normalized == "hybrid_genetic_vns":
         heuristic_use_local_search = kwargs.get("heuristic_use_local_search")
         return HybridGeneticVNSSolver(
@@ -175,11 +163,7 @@ def solver_names() -> list[str]:
         "deadline",
         "min_deferral",
         "inferior_insertion",
-        "inferior_insertion_ls",
         "regret_dispatch",
-        "regret_dispatch_ls",
-        "hybrid_genetic_vns",
-        "cp_full_week",
+        "regret_ls",
         "cp_rolling",
-        "cp_rolling_repair",
     ]

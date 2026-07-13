@@ -148,8 +148,8 @@ def plot_result(
     legend_axis.text(
         0.05,
         0.85,
-        "Legend\n\n★ Depot\n● Delivered route stop\n● Incomplete customer\n→ Travel direction",
-        fontsize=12,
+        "Legend\n★ Depot\n● Delivered\n● Incomplete\n→ Direction",
+        fontsize=16,
         va="top",
     )
     figure.tight_layout(rect=(0, 0, 1, 0.95))

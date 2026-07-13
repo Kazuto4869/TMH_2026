@@ -1,9 +1,0 @@
-timestamp,model,row_type,day,runtime_sec,solver_status,gap_percent,objective,best_bound,cp_time_limit_sec,cp_time_limit_per_day_sec,cp_max_customers,cp_max_candidates_per_day,cp_threads,cp_log_search,delivered_count,incomplete_count,active_days,total_deferral_days,total_distance_km,total_travel_time_min,total_waiting_time_min,total_service_time_min,total_route_duration_min,objective_value,violation_count,number_of_active_days,hard_feasible
-20260708_141320,cp_rolling,DAY,1,0.833136,OPTIMAL,0.00%,500000.0,500000.0,,60,,50,8,True,,,,,,,,,,,,,
-20260708_141320,cp_rolling,DAY,2,1.125742,OPTIMAL,0.00%,735187.0,735187.0,,60,,50,8,True,,,,,,,,,,,,,
-20260708_141320,cp_rolling,DAY,3,4.537139,OPTIMAL,0.00%,1158774.0,1158774.0,,60,,50,8,True,,,,,,,,,,,,,
-20260708_141320,cp_rolling,DAY,4,60.226344,FEASIBLE,7.95%,1234173.0,1136076.0,,60,,50,8,True,,,,,,,,,,,,,
-20260708_141320,cp_rolling,DAY,5,2.085410,OPTIMAL,0.00%,2217502.0,2217502.0,,60,,50,8,True,,,,,,,,,,,,,
-20260708_141320,cp_rolling,DAY,6,60.125055,FEASIBLE,6.97%,1841246.0,1712840.0,,60,,50,8,True,,,,,,,,,,,,,
-20260708_141320,cp_rolling,DAY,7,60.102227,FEASIBLE,18.00%,1835530.0,1505200.0,,60,,50,8,True,,,,,,,,,,,,,
-20260708_141320,cp_rolling,SUMMARY,SUMMARY,189.038256,FEASIBLE,18.00%,,,,60,,50,8,True,197,103,6,722,641.5426222334868,867,616,1479,2962,110227631.42622234,0,6,True

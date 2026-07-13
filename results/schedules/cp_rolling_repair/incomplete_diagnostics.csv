@@ -1,4 +1,0 @@
-customer_id,available_days,last_available_day,selected_on_last_day,mandatory_on_last_day,stage1a_value,stage1b_value,stage2_value,extracted_in_route,diagnosis_reason
-C083,4 5,5,True,True,0,,,False,stage1a_timeout_or_conflict
-C233,1 5,5,True,True,0,,,False,stage1a_timeout_or_conflict
-C250,3 4 5,5,True,True,0,,,False,stage1a_timeout_or_conflict

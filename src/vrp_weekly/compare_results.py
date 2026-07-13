@@ -12,9 +12,6 @@ from vrp_weekly.config import METRIC_COLUMNS, OBJECTIVE_VERSION, SORT_BY
 from vrp_weekly.evaluator import calculate_objective_value
 from vrp_weekly.export import export_benchmark_plots
 
-DISPLAY_NAMES = {
-    "cp_rolling_repair": "CP Rolling + Weekly Repair",
-}
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_RESULTS_DIR = PROJECT_ROOT / "results"
 BASELINE_SOLVERS = {"nearest", "deadline", "min_deferral"}
